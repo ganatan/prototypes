@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: springboot-starter
+
+server:
+  port: 3000
