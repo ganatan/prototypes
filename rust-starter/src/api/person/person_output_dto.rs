@@ -2,16 +2,13 @@ use serde::Serialize;
 
 use super::person::Person;
 
-#[derive(
-    Debug,
-    Serialize,
-)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PersonOutputDto {
-    pub id: u32,
+    pub id: i32,
     pub first_name: String,
     pub last_name: String,
-    pub city_id: u32,
+    pub city_id: i32,
 }
 
 impl From<&Person> for PersonOutputDto {

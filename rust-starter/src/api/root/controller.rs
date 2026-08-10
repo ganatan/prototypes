@@ -1,21 +1,10 @@
 use std::collections::HashMap;
 
-use axum::{
-    Json,
-    Router,
-    routing::get,
-};
+use axum::{Json, Router, routing::get};
 use serde::Serialize;
-use serde_json::{
-    Value,
-    json,
-};
+use serde_json::{Value, json};
 
-use crate::config::{
-    APPLICATION_NAME,
-    APPLICATION_STATUS,
-    RUST_EDITION,
-};
+use crate::config::{APPLICATION_NAME, APPLICATION_STATUS, RUST_EDITION};
 
 #[derive(Serialize)]
 pub struct ApiInfo {

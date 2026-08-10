@@ -1,12 +1,7 @@
-#[derive(
-    Clone,
-    Debug,
-    Eq,
-    PartialEq,
-)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Person {
-    pub id: u32,
+    pub id: i32,
     pub first_name: String,
     pub last_name: String,
-    pub city_id: u32,
+    pub city_id: i32,
 }

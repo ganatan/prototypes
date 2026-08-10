@@ -26,7 +26,9 @@ fn empty_request(
     Request::builder()
         .method(method)
         .uri(uri)
-        .body(Body::empty())
+        .body(
+            Body::empty(),
+        )
         .unwrap()
 }
 
@@ -60,8 +62,10 @@ async fn read_json(
     .await
     .unwrap();
 
-    serde_json::from_slice(&body)
-        .unwrap()
+    serde_json::from_slice(
+        &body,
+    )
+    .unwrap()
 }
 
 #[tokio::test]
@@ -81,10 +85,13 @@ async fn get_all_persons_should_return_seven_persons() {
         StatusCode::OK,
     );
 
-    let body = read_json(response).await;
+    let body =
+        read_json(response).await;
 
     assert_eq!(
-        body.as_array().unwrap().len(),
+        body.as_array()
+            .unwrap()
+            .len(),
         7,
     );
 }
@@ -106,18 +113,28 @@ async fn get_person_by_id_should_return_person_output() {
         StatusCode::OK,
     );
 
-    let body = read_json(response).await;
+    let body =
+        read_json(response).await;
 
-    assert_eq!(body["id"], 1);
+    assert_eq!(
+        body["id"],
+        1,
+    );
+
     assert_eq!(
         body["firstName"],
         "Steven",
     );
+
     assert_eq!(
         body["lastName"],
         "Spielberg",
     );
-    assert_eq!(body["cityId"], 1);
+
+    assert_eq!(
+        body["cityId"],
+        1,
+    );
 }
 
 #[tokio::test]
@@ -142,18 +159,28 @@ async fn create_person_should_return_created_person() {
         StatusCode::CREATED,
     );
 
-    let body = read_json(response).await;
+    let body =
+        read_json(response).await;
 
-    assert_eq!(body["id"], 8);
+    assert_eq!(
+        body["id"],
+        8,
+    );
+
     assert_eq!(
         body["firstName"],
         "Clint",
     );
+
     assert_eq!(
         body["lastName"],
         "Eastwood",
     );
-    assert_eq!(body["cityId"], 8);
+
+    assert_eq!(
+        body["cityId"],
+        8,
+    );
 }
 
 #[tokio::test]
@@ -176,6 +203,65 @@ async fn create_person_should_reject_invalid_payload() {
     assert_eq!(
         response.status(),
         StatusCode::BAD_REQUEST,
+    );
+}
+
+#[tokio::test]
+async fn update_person_should_return_updated_person() {
+    let response = routes()
+        .oneshot(
+            json_request(
+                Method::PUT,
+                "/persons/1",
+                json!({
+                    "firstName": "Steven",
+                    "lastName": "Spielberg Updated",
+                    "cityId": 10
+                }),
+            ),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        response.status(),
+        StatusCode::OK,
+    );
+
+    let body =
+        read_json(response).await;
+
+    assert_eq!(
+        body["id"],
+        1,
+    );
+
+    assert_eq!(
+        body["lastName"],
+        "Spielberg Updated",
+    );
+
+    assert_eq!(
+        body["cityId"],
+        10,
+    );
+}
+
+#[tokio::test]
+async fn delete_person_should_return_no_content() {
+    let response = routes()
+        .oneshot(
+            empty_request(
+                Method::DELETE,
+                "/persons/1",
+            ),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        response.status(),
+        StatusCode::NO_CONTENT,
     );
 }
 
