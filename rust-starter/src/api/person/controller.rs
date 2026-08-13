@@ -43,7 +43,6 @@ pub fn routes(pool: PgPool) -> Router {
 async fn get_all_persons(
     State(controller): State<PersonController>,
 ) -> Result<Json<Vec<PersonOutputDto>>, StatusCode> {
-    println!("00000000001");
     let persons = controller
         .person_service
         .get_all()

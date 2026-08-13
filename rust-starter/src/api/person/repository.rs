@@ -32,7 +32,6 @@ impl PersonRepository {
     }
 
     pub async fn find_all(&self) -> Result<Vec<Person>, sqlx::Error> {
-        println!("00000000003");
         let rows = sqlx::query_as::<_, PersonRow>(
             r#"
                 SELECT
@@ -46,7 +45,6 @@ impl PersonRepository {
         )
         .fetch_all(&self.pool)
         .await?;
-        println!("00000000004");
         Ok(rows.into_iter().map(Person::from).collect())
     }
 

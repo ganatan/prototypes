@@ -11,7 +11,6 @@ impl PersonService {
     }
 
     pub async fn get_all(&self) -> Result<Vec<Person>, sqlx::Error> {
-        println!("00000000002");
         self.person_repository.find_all().await
     }
 
