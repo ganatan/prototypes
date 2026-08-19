@@ -1,10 +1,7 @@
 package com.ganatan.starter.api.person;
 
 import jakarta.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,25 +18,20 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/persons")
 public class PersonController {
 
-  private final AtomicInteger idCounter =
-      new AtomicInteger(0);
+  private final PersonService personService;
 
-  private final List<Person> personList =
-      new ArrayList<>();
-
-  public PersonController() {
-    addInitialPerson("Steven", "Spielberg", 1);
-    addInitialPerson("Martin", "Scorsese", 2);
-    addInitialPerson("Francis", "Ford Coppola", 3);
-    addInitialPerson("George", "Lucas", 4);
-    addInitialPerson("Quentin", "Tarantino", 5);
-    addInitialPerson("David", "Fincher", 6);
-    addInitialPerson("Spike", "Lee", 7);
+  public PersonController(
+      PersonService personService
+  ) {
+    this.personService =
+        personService;
   }
 
   @GetMapping
   public List<PersonOutputDto> getAllPersons() {
-    return personList.stream()
+    return personService
+        .getAllPersons()
+        .stream()
         .map(PersonOutputDto::from)
         .toList();
   }
@@ -48,14 +40,17 @@ public class PersonController {
   public PersonOutputDto getPersonById(
       @PathVariable int id
   ) {
-    Person person = findPersonById(id)
+    Person person = personService
+        .getPersonById(id)
         .orElseThrow(
             () -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND
             )
         );
 
-    return PersonOutputDto.from(person);
+    return PersonOutputDto.from(
+        person
+    );
   }
 
   @PostMapping
@@ -63,18 +58,16 @@ public class PersonController {
   public PersonOutputDto createPerson(
       @Valid @RequestBody PersonInputDto input
   ) {
-    int id = idCounter.incrementAndGet();
+    Person person = personService
+        .createPerson(
+            input.firstName(),
+            input.lastName(),
+            input.cityId()
+        );
 
-    Person person = new Person(
-        id,
-        input.firstName(),
-        input.lastName(),
-        input.cityId()
+    return PersonOutputDto.from(
+        person
     );
-
-    personList.add(person);
-
-    return PersonOutputDto.from(person);
   }
 
   @PutMapping("/{id}")
@@ -82,25 +75,22 @@ public class PersonController {
       @PathVariable int id,
       @Valid @RequestBody PersonInputDto input
   ) {
-    Person existing = findPersonById(id)
+    Person person = personService
+        .updatePerson(
+            id,
+            input.firstName(),
+            input.lastName(),
+            input.cityId()
+        )
         .orElseThrow(
             () -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND
             )
         );
 
-    Person updated = new Person(
-        existing.id(),
-        input.firstName(),
-        input.lastName(),
-        input.cityId()
+    return PersonOutputDto.from(
+        person
     );
-
-    int index = personList.indexOf(existing);
-
-    personList.set(index, updated);
-
-    return PersonOutputDto.from(updated);
   }
 
   @DeleteMapping("/{id}")
@@ -108,38 +98,13 @@ public class PersonController {
   public void deletePerson(
       @PathVariable int id
   ) {
-    Person existing = findPersonById(id)
-        .orElseThrow(
-            () -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND
-            )
-        );
+    boolean deleted =
+        personService.deletePerson(id);
 
-    personList.remove(existing);
-  }
-
-  private void addInitialPerson(
-      String firstName,
-      String lastName,
-      int cityId
-  ) {
-    int id = idCounter.incrementAndGet();
-
-    personList.add(
-        new Person(
-            id,
-            firstName,
-            lastName,
-            cityId
-        )
-    );
-  }
-
-  private Optional<Person> findPersonById(
-      int id
-  ) {
-    return personList.stream()
-        .filter(person -> person.id() == id)
-        .findFirst();
+    if (!deleted) {
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND
+      );
+    }
   }
 }

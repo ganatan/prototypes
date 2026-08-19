@@ -11,10 +11,10 @@ public record PersonOutputDto(
       Person person
   ) {
     return new PersonOutputDto(
-        person.id(),
-        person.firstName(),
-        person.lastName(),
-        person.cityId()
+        person.getId(),
+        person.getFirstName(),
+        person.getLastName(),
+        person.getCityId()
     );
   }
 }
