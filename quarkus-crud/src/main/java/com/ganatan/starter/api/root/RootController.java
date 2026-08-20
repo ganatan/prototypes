@@ -9,38 +9,71 @@ import java.util.Map;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
-@SuppressWarnings("unused")
 public class RootController {
 
-  public record ApiInfo(String application, String status, String java) {}
+  public record ApiInfo(
+      String application,
+      String status,
+      String java
+  ) {
+  }
 
   @GET
   public Map<String, Object> root() {
+
     return Map.of(
-        "application", "quarkus-starter",
-        "status", "running",
-        "java", System.getProperty("java.version")
+        "application",
+        "quarkus-starter",
+        "status",
+        "running",
+        "java",
+        System.getProperty(
+            "java.version"
+        )
     );
+
   }
 
   @GET
-  @Path("/info")
+  @Path("info")
   public ApiInfo rootWithRecord() {
+
     return new ApiInfo(
         "quarkus-starter",
         "running",
-        System.getProperty("java.version")
+        System.getProperty(
+            "java.version"
+        )
     );
+
   }
 
   @GET
-  @Path("/status")
+  @Path("status")
   public Map<String, Object> rootWithHashMap() {
-    Map<String, Object> response = new HashMap<>();
-    response.put("application", "quarkus-starter");
-    response.put("status", "running");
-    response.put("java", System.getProperty("java.version"));
+
+    Map<String, Object> response =
+        new HashMap<>();
+
+    response.put(
+        "application",
+        "quarkus-starter"
+    );
+
+    response.put(
+        "status",
+        "running"
+    );
+
+    response.put(
+        "java",
+        System.getProperty(
+            "java.version"
+        )
+    );
+
     return response;
+
   }
 
 }

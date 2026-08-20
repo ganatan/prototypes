@@ -11,13 +11,21 @@ class RootControllerTest {
 
   @Test
   void shouldReturnApplicationInformation() {
+
     given()
         .when()
         .get("/")
         .then()
         .statusCode(200)
-        .body("application", is("quarkus-starter"))
-        .body("status", is("running"));
+        .body(
+            "application",
+            is("quarkus-starter")
+        )
+        .body(
+            "status",
+            is("running")
+        );
+
   }
 
 }
