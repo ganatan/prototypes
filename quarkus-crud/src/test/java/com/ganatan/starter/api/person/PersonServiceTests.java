@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,7 +41,8 @@ class PersonServiceTests {
   void getAllPersons_shouldReturnPersons() {
 
     when(
-        repository.findAll()
+        repository
+            .findAllByOrderByIdAsc()
     ).thenReturn(
         List.of(
             new Person(
@@ -68,7 +70,7 @@ class PersonServiceTests {
 
     verify(
         repository
-    ).findAll();
+    ).findAllByOrderByIdAsc();
 
   }
 
@@ -76,7 +78,8 @@ class PersonServiceTests {
   void getPersonById_shouldReturnPerson() {
 
     when(
-        repository.findById(1)
+        repository
+            .findByIdOptional(1)
     ).thenReturn(
         Optional.of(
             new Person(
@@ -94,27 +97,27 @@ class PersonServiceTests {
 
     assertEquals(
         1,
-        person.id()
+        person.getId()
     );
 
     assertEquals(
         "Steven",
-        person.firstName()
+        person.getFirstName()
     );
 
     assertEquals(
         "Spielberg",
-        person.lastName()
+        person.getLastName()
     );
 
     assertEquals(
         1,
-        person.cityId()
+        person.getCityId()
     );
 
     verify(
         repository
-    ).findById(1);
+    ).findByIdOptional(1);
 
   }
 
@@ -122,7 +125,8 @@ class PersonServiceTests {
   void getPersonById_shouldReturnEmpty() {
 
     when(
-        repository.findById(999)
+        repository
+            .findByIdOptional(999)
     ).thenReturn(
         Optional.empty()
     );
@@ -136,27 +140,12 @@ class PersonServiceTests {
 
     verify(
         repository
-    ).findById(999);
+    ).findByIdOptional(999);
 
   }
 
   @Test
-  void createPerson_shouldReturnCreatedPerson() {
-
-    when(
-        repository.create(
-            "Clint",
-            "Eastwood",
-            8
-        )
-    ).thenReturn(
-        new Person(
-            8,
-            "Clint",
-            "Eastwood",
-            8
-        )
-    );
+  void createPerson_shouldPersistPerson() {
 
     Person person =
         service.createPerson(
@@ -166,53 +155,45 @@ class PersonServiceTests {
         );
 
     assertEquals(
-        8,
-        person.id()
-    );
-
-    assertEquals(
         "Clint",
-        person.firstName()
+        person.getFirstName()
     );
 
     assertEquals(
         "Eastwood",
-        person.lastName()
+        person.getLastName()
     );
 
     assertEquals(
         8,
-        person.cityId()
+        person.getCityId()
     );
 
     verify(
         repository
-    ).create(
-        "Clint",
-        "Eastwood",
-        8
+    ).persist(
+        any(Person.class)
     );
 
   }
 
   @Test
-  void updatePerson_shouldReturnUpdatedPerson() {
+  void updatePerson_shouldModifyPerson() {
 
-    when(
-        repository.update(
+    Person existing =
+        new Person(
             1,
             "Steven",
-            "Spielberg Updated",
-            10
-        )
+            "Spielberg",
+            1
+        );
+
+    when(
+        repository
+            .findByIdOptional(1)
     ).thenReturn(
         Optional.of(
-            new Person(
-                1,
-                "Steven",
-                "Spielberg Updated",
-                10
-            )
+            existing
         )
     );
 
@@ -227,27 +208,27 @@ class PersonServiceTests {
 
     assertEquals(
         1,
-        person.id()
+        person.getId()
+    );
+
+    assertEquals(
+        "Steven",
+        person.getFirstName()
     );
 
     assertEquals(
         "Spielberg Updated",
-        person.lastName()
+        person.getLastName()
     );
 
     assertEquals(
         10,
-        person.cityId()
+        person.getCityId()
     );
 
     verify(
         repository
-    ).update(
-        1,
-        "Steven",
-        "Spielberg Updated",
-        10
-    );
+    ).findByIdOptional(1);
 
   }
 
@@ -255,12 +236,8 @@ class PersonServiceTests {
   void updatePerson_shouldReturnEmpty() {
 
     when(
-        repository.update(
-            999,
-            "Unknown",
-            "Person",
-            1
-        )
+        repository
+            .findByIdOptional(999)
     ).thenReturn(
         Optional.empty()
     );
@@ -277,22 +254,13 @@ class PersonServiceTests {
         person.isEmpty()
     );
 
-    verify(
-        repository
-    ).update(
-        999,
-        "Unknown",
-        "Person",
-        1
-    );
-
   }
 
   @Test
   void deletePerson_shouldReturnTrue() {
 
     when(
-        repository.delete(1)
+        repository.deleteById(1)
     ).thenReturn(
         true
     );
@@ -306,7 +274,7 @@ class PersonServiceTests {
 
     verify(
         repository
-    ).delete(1);
+    ).deleteById(1);
 
   }
 
@@ -314,7 +282,7 @@ class PersonServiceTests {
   void deletePerson_shouldReturnFalse() {
 
     when(
-        repository.delete(999)
+        repository.deleteById(999)
     ).thenReturn(
         false
     );
@@ -328,7 +296,7 @@ class PersonServiceTests {
 
     verify(
         repository
-    ).delete(999);
+    ).deleteById(999);
 
   }
 

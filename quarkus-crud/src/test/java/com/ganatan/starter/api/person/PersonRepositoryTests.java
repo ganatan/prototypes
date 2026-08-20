@@ -1,235 +1,75 @@
 package com.ganatan.starter.api.person;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import io.quarkus.test.TestTransaction;
+import io.quarkus.test.junit.QuarkusTest;
 
-import io.agroal.api.AgroalDataSource;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import jakarta.inject.Inject;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.Mockito;
-
+@QuarkusTest
+@TestTransaction
 class PersonRepositoryTests {
 
-  private AgroalDataSource dataSource;
-
-  private Connection connection;
-
-  private PreparedStatement statement;
-
-  private ResultSet resultSet;
-
-  private PersonRepository repository;
-
-  @BeforeEach
-  void setUp() throws Exception {
-
-    dataSource =
-        Mockito.mock(
-            AgroalDataSource.class
-        );
-
-    connection =
-        Mockito.mock(
-            Connection.class
-        );
-
-    statement =
-        Mockito.mock(
-            PreparedStatement.class
-        );
-
-    resultSet =
-        Mockito.mock(
-            ResultSet.class
-        );
-
-    when(
-        dataSource.getConnection()
-    ).thenReturn(
-        connection
-    );
-
-    when(
-        connection.prepareStatement(
-            anyString()
-        )
-    ).thenReturn(
-        statement
-    );
-
-    repository =
-        new PersonRepository(
-            dataSource
-        );
-
-  }
+  @Inject
+  PersonRepository repository;
 
   @Test
-  void findAll_shouldReturnPersons()
-      throws Exception {
-
-    when(
-        statement.executeQuery()
-    ).thenReturn(
-        resultSet
-    );
-
-    when(
-        resultSet.next()
-    ).thenReturn(
-        true,
-        true,
-        false
-    );
-
-    when(
-        resultSet.getInt("id")
-    ).thenReturn(
-        1,
-        2
-    );
-
-    when(
-        resultSet.getString("first_name")
-    ).thenReturn(
-        "Steven",
-        "Martin"
-    );
-
-    when(
-        resultSet.getString("last_name")
-    ).thenReturn(
-        "Spielberg",
-        "Scorsese"
-    );
-
-    when(
-        resultSet.getInt("city_id")
-    ).thenReturn(
-        1,
-        2
-    );
+  void findAll_shouldReturnSevenPersons() {
 
     List<Person> persons =
-        repository.findAll();
+        repository
+            .findAllByOrderByIdAsc();
 
     assertEquals(
-        2,
+        7,
         persons.size()
     );
 
-    assertEquals(
-        "Steven",
-        persons.get(0).firstName()
-    );
-
-    assertEquals(
-        "Martin",
-        persons.get(1).firstName()
-    );
-
   }
 
   @Test
-  void findById_shouldReturnPerson()
-      throws Exception {
-
-    when(
-        statement.executeQuery()
-    ).thenReturn(
-        resultSet
-    );
-
-    when(
-        resultSet.next()
-    ).thenReturn(
-        true
-    );
-
-    when(
-        resultSet.getInt("id")
-    ).thenReturn(
-        1
-    );
-
-    when(
-        resultSet.getString("first_name")
-    ).thenReturn(
-        "Steven"
-    );
-
-    when(
-        resultSet.getString("last_name")
-    ).thenReturn(
-        "Spielberg"
-    );
-
-    when(
-        resultSet.getInt("city_id")
-    ).thenReturn(
-        1
-    );
+  void findById_shouldReturnPerson() {
 
     Person person = repository
-        .findById(1)
+        .findByIdOptional(1)
         .orElseThrow();
 
     assertEquals(
         1,
-        person.id()
+        person.getId()
     );
 
     assertEquals(
         "Steven",
-        person.firstName()
+        person.getFirstName()
     );
 
     assertEquals(
         "Spielberg",
-        person.lastName()
+        person.getLastName()
     );
 
-    verify(
-        statement
-    ).setInt(
+    assertEquals(
         1,
-        1
+        person.getCityId()
     );
 
   }
 
   @Test
-  void findById_shouldReturnEmpty()
-      throws Exception {
-
-    when(
-        statement.executeQuery()
-    ).thenReturn(
-        resultSet
-    );
-
-    when(
-        resultSet.next()
-    ).thenReturn(
-        false
-    );
+  void findById_shouldReturnEmpty() {
 
     Optional<Person> person =
-        repository.findById(999);
+        repository
+            .findByIdOptional(999);
 
     assertTrue(
         person.isEmpty()
@@ -238,232 +78,123 @@ class PersonRepositoryTests {
   }
 
   @Test
-  void create_shouldReturnCreatedPerson()
-      throws Exception {
-
-    when(
-        statement.executeQuery()
-    ).thenReturn(
-        resultSet
-    );
-
-    when(
-        resultSet.next()
-    ).thenReturn(
-        true
-    );
-
-    when(
-        resultSet.getInt("id")
-    ).thenReturn(
-        8
-    );
-
-    when(
-        resultSet.getString("first_name")
-    ).thenReturn(
-        "Clint"
-    );
-
-    when(
-        resultSet.getString("last_name")
-    ).thenReturn(
-        "Eastwood"
-    );
-
-    when(
-        resultSet.getInt("city_id")
-    ).thenReturn(
-        8
-    );
+  void persist_shouldCreatePerson() {
 
     Person person =
-        repository.create(
+        new Person(
             "Clint",
             "Eastwood",
             8
         );
 
-    assertEquals(
-        8,
-        person.id()
+    repository.persist(
+        person
+    );
+
+    repository.flush();
+
+    assertNotNull(
+        person.getId()
     );
 
     assertEquals(
         "Clint",
-        person.firstName()
+        person.getFirstName()
     );
 
     assertEquals(
         "Eastwood",
-        person.lastName()
+        person.getLastName()
     );
 
     assertEquals(
         8,
-        person.cityId()
-    );
-
-    verify(
-        statement
-    ).setString(
-        1,
-        "Clint"
-    );
-
-    verify(
-        statement
-    ).setString(
-        2,
-        "Eastwood"
-    );
-
-    verify(
-        statement
-    ).setInt(
-        3,
-        8
+        person.getCityId()
     );
 
   }
 
   @Test
-  void update_shouldReturnUpdatedPerson()
-      throws Exception {
+  void update_shouldModifyPerson() {
 
-    when(
-        statement.executeQuery()
-    ).thenReturn(
-        resultSet
+    Person person =
+        new Person(
+            "Clint",
+            "Eastwood",
+            8
+        );
+
+    repository.persist(
+        person
     );
 
-    when(
-        resultSet.next()
-    ).thenReturn(
-        true
+    repository.flush();
+
+    Integer id =
+        person.getId();
+
+    person.setLastName(
+        "Eastwood Updated"
     );
 
-    when(
-        resultSet.getInt("id")
-    ).thenReturn(
-        1
-    );
-
-    when(
-        resultSet.getString("first_name")
-    ).thenReturn(
-        "Steven"
-    );
-
-    when(
-        resultSet.getString("last_name")
-    ).thenReturn(
-        "Spielberg Updated"
-    );
-
-    when(
-        resultSet.getInt("city_id")
-    ).thenReturn(
+    person.setCityId(
         10
     );
 
-    Person person = repository
-        .update(
-            1,
-            "Steven",
-            "Spielberg Updated",
-            10
-        )
+    repository.flush();
+
+    Person updated = repository
+        .findByIdOptional(id)
         .orElseThrow();
 
     assertEquals(
-        1,
-        person.id()
+        "Clint",
+        updated.getFirstName()
     );
 
     assertEquals(
-        "Spielberg Updated",
-        person.lastName()
+        "Eastwood Updated",
+        updated.getLastName()
     );
 
     assertEquals(
         10,
-        person.cityId()
+        updated.getCityId()
     );
 
   }
 
   @Test
-  void update_shouldReturnEmpty()
-      throws Exception {
+  void delete_shouldRemovePerson() {
 
-    when(
-        statement.executeQuery()
-    ).thenReturn(
-        resultSet
-    );
-
-    when(
-        resultSet.next()
-    ).thenReturn(
-        false
-    );
-
-    Optional<Person> person =
-        repository.update(
-            999,
-            "Unknown",
-            "Person",
-            1
+    Person person =
+        new Person(
+            "Clint",
+            "Eastwood",
+            8
         );
 
+    repository.persist(
+        person
+    );
+
+    repository.flush();
+
+    Integer id =
+        person.getId();
+
+    repository.delete(
+        person
+    );
+
+    repository.flush();
+
+    Optional<Person> result =
+        repository
+            .findByIdOptional(id);
+
     assertTrue(
-        person.isEmpty()
-    );
-
-  }
-
-  @Test
-  void delete_shouldReturnTrue()
-      throws Exception {
-
-    when(
-        statement.executeUpdate()
-    ).thenReturn(
-        1
-    );
-
-    boolean deleted =
-        repository.delete(1);
-
-    assertTrue(
-        deleted
-    );
-
-    verify(
-        statement
-    ).setInt(
-        1,
-        1
-    );
-
-  }
-
-  @Test
-  void delete_shouldReturnFalse()
-      throws Exception {
-
-    when(
-        statement.executeUpdate()
-    ).thenReturn(
-        0
-    );
-
-    boolean deleted =
-        repository.delete(999);
-
-    assertFalse(
-        deleted
+        result.isEmpty()
     );
 
   }

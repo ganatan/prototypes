@@ -1,6 +1,7 @@
 package com.ganatan.starter.api.person;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public class PersonService {
   public List<Person> getAllPersons() {
 
     return personRepository
-        .findAll();
+        .findAllByOrderByIdAsc();
 
   }
 
@@ -31,25 +32,32 @@ public class PersonService {
   ) {
 
     return personRepository
-        .findById(id);
+        .findByIdOptional(id);
 
   }
 
+  @Transactional
   public Person createPerson(
       String firstName,
       String lastName,
       int cityId
   ) {
 
-    return personRepository
-        .create(
-            firstName,
-            lastName,
-            cityId
-        );
+    Person person = new Person(
+        firstName,
+        lastName,
+        cityId
+    );
+
+    personRepository.persist(
+        person
+    );
+
+    return person;
 
   }
 
+  @Transactional
   public Optional<Person> updatePerson(
       int id,
       String firstName,
@@ -57,22 +65,44 @@ public class PersonService {
       int cityId
   ) {
 
-    return personRepository
-        .update(
-            id,
-            firstName,
-            lastName,
-            cityId
-        );
+    Optional<Person> existing =
+        personRepository
+            .findByIdOptional(id);
+
+    if (existing.isEmpty()) {
+
+      return Optional.empty();
+
+    }
+
+    Person person =
+        existing.get();
+
+    person.setFirstName(
+        firstName
+    );
+
+    person.setLastName(
+        lastName
+    );
+
+    person.setCityId(
+        cityId
+    );
+
+    return Optional.of(
+        person
+    );
 
   }
 
+  @Transactional
   public boolean deletePerson(
       int id
   ) {
 
     return personRepository
-        .delete(id);
+        .deleteById(id);
 
   }
 

@@ -1,15 +1,132 @@
 package com.ganatan.starter.api.person;
 
-public record Person(
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-    int id,
+@Entity
+@Table(name = "person")
+public class Person {
 
-    String firstName,
+  @Id
+  @GeneratedValue(
+      strategy = GenerationType.IDENTITY
+  )
+  private Integer id;
 
-    String lastName,
+  @Column(
+      name = "first_name",
+      nullable = false,
+      length = 50
+  )
+  private String firstName;
 
-    int cityId
+  @Column(
+      name = "last_name",
+      nullable = false,
+      length = 50
+  )
+  private String lastName;
 
-) {
+  @Column(
+      name = "city_id",
+      nullable = false
+  )
+  private int cityId;
+
+  protected Person() {
+  }
+
+  public Person(
+      String firstName,
+      String lastName,
+      int cityId
+  ) {
+
+    this.firstName =
+        firstName;
+
+    this.lastName =
+        lastName;
+
+    this.cityId =
+        cityId;
+
+  }
+
+  public Person(
+      Integer id,
+      String firstName,
+      String lastName,
+      int cityId
+  ) {
+
+    this.id =
+        id;
+
+    this.firstName =
+        firstName;
+
+    this.lastName =
+        lastName;
+
+    this.cityId =
+        cityId;
+
+  }
+
+  public Integer getId() {
+
+    return id;
+
+  }
+
+  public String getFirstName() {
+
+    return firstName;
+
+  }
+
+  public void setFirstName(
+      String firstName
+  ) {
+
+    this.firstName =
+        firstName;
+
+  }
+
+  public String getLastName() {
+
+    return lastName;
+
+  }
+
+  public void setLastName(
+      String lastName
+  ) {
+
+    this.lastName =
+        lastName;
+
+  }
+
+  public int getCityId() {
+
+    return cityId;
+
+  }
+
+  public void setCityId(
+      int cityId
+  ) {
+
+    this.cityId =
+        cityId;
+
+  }
 
 }
