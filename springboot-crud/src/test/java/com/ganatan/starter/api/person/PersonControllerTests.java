@@ -59,36 +59,43 @@ class PersonControllerTests {
     ).thenReturn(
         List.of(
             new Person(
+                1,
                 "Steven",
                 "Spielberg",
                 1
             ),
             new Person(
+                2,
                 "Martin",
                 "Scorsese",
                 2
             ),
             new Person(
+                3,
                 "Francis",
                 "Ford Coppola",
                 3
             ),
             new Person(
+                4,
                 "George",
                 "Lucas",
                 4
             ),
             new Person(
+                5,
                 "Quentin",
                 "Tarantino",
                 5
             ),
             new Person(
+                6,
                 "David",
                 "Fincher",
                 6
             ),
             new Person(
+                7,
                 "Spike",
                 "Lee",
                 7
@@ -113,6 +120,7 @@ class PersonControllerTests {
 
     Person person =
         new Person(
+            1,
             "Steven",
             "Spielberg",
             1
@@ -129,6 +137,10 @@ class PersonControllerTests {
         )
         .andExpect(
             status().isOk()
+        )
+        .andExpect(
+            jsonPath("$.id")
+                .value(1)
         )
         .andExpect(
             jsonPath("$.firstName")
@@ -168,6 +180,7 @@ class PersonControllerTests {
 
     Person person =
         new Person(
+            8,
             "Clint",
             "Eastwood",
             8
@@ -198,6 +211,10 @@ class PersonControllerTests {
         )
         .andExpect(
             status().isCreated()
+        )
+        .andExpect(
+            jsonPath("$.id")
+                .value(8)
         )
         .andExpect(
             jsonPath("$.firstName")
@@ -243,6 +260,7 @@ class PersonControllerTests {
 
     Person person =
         new Person(
+            1,
             "Steven",
             "Spielberg Updated",
             10
@@ -276,6 +294,10 @@ class PersonControllerTests {
         )
         .andExpect(
             status().isOk()
+        )
+        .andExpect(
+            jsonPath("$.id")
+                .value(1)
         )
         .andExpect(
             jsonPath("$.firstName")

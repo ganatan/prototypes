@@ -50,6 +50,18 @@ public class Person {
     this.cityId = cityId;
   }
 
+  public Person(
+      Integer id,
+      String firstName,
+      String lastName,
+      int cityId
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.cityId = cityId;
+  }
+
   public Integer getId() {
     return id;
   }

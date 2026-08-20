@@ -3,7 +3,7 @@ spring:
     name: springboot-starter
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/springboot_starter
+    url: jdbc:postgresql://localhost:5432/backend_crud
     username: postgres
     password: Trustno1
 
