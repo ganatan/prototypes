@@ -68,75 +68,12 @@ async fn root() -> &'static str {
 
 ---
 
-## ▶️ Lancement du projet
+## Exécution et compilation
 
 ```bash
-cargo run
-```
-
-
-```text
-http://localhost:3000
-```
-
----
-
-## 🔍 Vérification
-
-Ouvrir dans le navigateur :
-
-```text
-http://localhost:3000
-```
-
-Réponse attendue :
-
-```text
-Rust backend
-```
-
----
-
-## 📦 Compilation du projet
-
-### Compilation de développement
-
-```bash
-cargo build
-```
-
-Le programme est généré dans :
-
-```text
-target/debug
-```
-
-### Compilation de production
-
-```bash
-cargo build --release
-```
-
-Le programme optimisé est généré dans :
-
-```text
-target/release
-```
-
----
-
-## ▶️ Lancement de l’exécutable
-
-### Windows
-
-```powershell
-.\target\release\rust-starter.exe
-```
-
-### Linux
-
-```bash
-./target/release/rust-starter
-```
-
-
+cargo run                          # Compile et lance le projet en mode développement
+http://localhost:3000              # Teste l'application dans le navigateur
+cargo build                        # Compile le projet en mode développement
+cargo build --release              # Compile le projet optimisé pour la production
+./target/release/rust-crud         # Lance l'exécutable Linux
+.\target\release\rust-crud.exe     # Lance l'exécutable Windows
