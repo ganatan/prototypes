@@ -5,6 +5,7 @@
 
 ###  Starter
 - [Starter](./starter/101-rust-starter.md)
+- [Emitter](./starter/102-rust-emitter.md)
 
 ###  CRUD
 - [Starter](./crud/201-rust-crud.md)
