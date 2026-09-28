@@ -1,7 +1,7 @@
 ## RUST
 
 ###  Utils
-- [Installation](./001-installation.md)
+- [Installation](./install/001-installation.md)
 
 ###  Starter
 - [Starter](./starter/101-rust-starter.md)
