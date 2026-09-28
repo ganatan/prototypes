@@ -1,8 +1,7 @@
-# Index 
+# Index
 
-|  |  |  |  |  |
-| [RUST](./doc/rust/README.md)  | [SPRINGBOOT](./doc/springboot/README.md) | [CRUD](./doc/quarkus/README.md) |  | [GIT](./doc/git/README.md) |
-|  |  |  |  |  |
-
-
-
+|  |  |  |  |  |  |
+| --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |
+| [RUST](./doc/rust/README.md) | [SPRINGBOOT](./doc/springboot/README.md) | [QUARKUS](./doc/quarkus/README.md) | [KAFKA](./doc/kafka/README.md) | [REDIS](./doc/redis/README.md) | [GIT](./doc/git/README.md) |
+|  |  |  |  |  |  |
