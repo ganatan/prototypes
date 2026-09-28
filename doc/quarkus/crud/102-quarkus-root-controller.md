@@ -5,11 +5,9 @@ GET /
 GET /info
 GET /status
 ```
-
-
 ---
 
-## ⚙️ Configuration Quarkus
+## Configuration Quarkus
 
 ### application.properties
 
@@ -64,38 +62,6 @@ Un nouveau test sera créé ici :
 
 ```text
 src/test/java/com/ganatan/starter/api/root/RootControllerTest.java
-```
-
----
-
-# Structure
-
-La structure devient :
-
-```text
-quarkus-starter/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── ganatan/
-│   │   │           └── starter/
-│   │   │               └── api/
-│   │   │                   └── root/
-│   │   │                       └── RootController.java
-│   │   └── resources/
-│   │       └── application.properties
-│   └── test/
-│       └── java/
-│           └── com/
-│               └── ganatan/
-│                   └── starter/
-│                       └── api/
-│                           └── root/
-│                               └── RootControllerTest.java
-├── mvnw
-├── mvnw.cmd
-└── pom.xml
 ```
 
 ---
@@ -245,98 +211,6 @@ public class RootController {
 
 ---
 
-# Routes
-
-Le controller expose :
-
-```text
-GET /
-GET /info
-GET /status
-```
-
-Base URL :
-
-```text
-http://localhost:3000
-```
-
----
-
-## GET /
-
-URL :
-
-```text
-http://localhost:3000/
-```
-
-Réponse :
-
-```json
-{
-  "application": "quarkus-starter",
-  "status": "running",
-  "java": "25.0.x"
-}
-```
-
----
-
-## GET /info
-
-URL :
-
-```text
-http://localhost:3000/info
-```
-
-Réponse :
-
-```json
-{
-  "application": "quarkus-starter",
-  "status": "running",
-  "java": "25.0.x"
-}
-```
-
-Cette route utilise :
-
-```text
-ApiInfo
-```
-
-défini sous forme de `record`.
-
----
-
-## GET /status
-
-URL :
-
-```text
-http://localhost:3000/status
-```
-
-Réponse :
-
-```json
-{
-  "application": "quarkus-starter",
-  "status": "running",
-  "java": "25.0.x"
-}
-```
-
-Cette route construit la réponse avec :
-
-```text
-HashMap
-```
-
----
-
 # Test
 
 ## Classe
@@ -389,32 +263,6 @@ class RootControllerTest {
 
 ---
 
-# @QuarkusTest
-
-L'annotation :
-
-```java
-@QuarkusTest
-```
-
-démarre l'environnement Quarkus nécessaire au test.
-
-Le test réalise une véritable requête HTTP :
-
-```text
-GET /
-```
-
-et vérifie :
-
-```text
-status HTTP = 200
-application = quarkus-starter
-status = running
-```
-
----
-
 # Lancement en mode développement
 
 Se placer dans le dossier contenant :
@@ -437,77 +285,6 @@ mvn quarkus:dev
 
 ```powershell
 .\mvnw.cmd quarkus:dev
-```
-
----
-
-## Linux avec Maven Wrapper
-
-```bash
-./mvnw quarkus:dev
-```
-
-La différence est :
-
-```text
-mvn   → utilise Maven installé sur la machine
-mvnw  → utilise le Maven Wrapper fourni avec le projet
-```
-
-Quarkus démarre en mode développement avec :
-
-```text
-Live Coding
-```
-
-Les modifications du code sont automatiquement détectées.
-
----
-
-# Vérification dans le navigateur
-
-Une fois l'application démarrée, tester :
-
-```text
-http://localhost:3000/
-```
-
-Puis :
-
-```text
-http://localhost:3000/info
-```
-
-et :
-
-```text
-http://localhost:3000/status
-```
-
----
-
-# Test avec curl
-
-## Root
-
-```bash
-curl http://localhost:3000/
-```
-
----
-
-## Info
-
-```bash
-curl http://localhost:3000/info
-```
-
----
-
-## Status
-
-```bash
-curl http://localhost:3000/status
 ```
 
 ---
@@ -613,23 +390,6 @@ mvn test
 
 ---
 
-## Linux avec Maven Wrapper
-
-```bash
-./mvnw test
-```
-
-Résultat attendu :
-
-```text
-Tests run: 1
-Failures: 0
-Errors: 0
-BUILD SUCCESS
-```
-
----
-
 # Build
 
 ## Avec Maven
@@ -644,20 +404,6 @@ mvn clean package
 
 ```powershell
 .\mvnw.cmd clean package
-```
-
----
-
-## Linux avec Maven Wrapper
-
-```bash
-./mvnw clean package
-```
-
-Le build est généré dans :
-
-```text
-target/quarkus-app/
 ```
 
 ---
@@ -741,172 +487,22 @@ Avec Maven Wrapper sous Linux :
 ```
 
 ---
-
 # Commandes Maven usuelles
 
-## Nettoyage
-
-```bash
-mvn clean
-```
-
----
-
-## Compilation
-
-```bash
-mvn compile
-```
-
----
-
-## Tests
-
-```bash
-mvn test
-```
-
----
-
-## Packaging
-
-```bash
-mvn package
-```
-
----
-
-## Vérification
-
-```bash
-mvn verify
-```
-
----
-
-## Installation dans le repository Maven local
-
-```bash
-mvn install
-```
-
----
-
-## Nettoyage et packaging
-
-```bash
-mvn clean package
-```
-
----
-
-## Nettoyage, tests et installation
-
-```bash
-mvn clean install
-```
-
----
-
-## Affichage des dépendances
-
-```bash
-mvn dependency:tree
-```
-
----
-
-## Affichage des mises à jour des dépendances
-
-```bash
-mvn versions:display-dependency-updates
-```
-
----
-
-## Affichage des mises à jour des plugins
-
-```bash
-mvn versions:display-plugin-updates
-```
-
----
-
-## Lancement en mode développement
-
-```bash
-mvn quarkus:dev
-```
-
----
-
-## Lancement de la version compilée
-
-```bash
-java -jar target/quarkus-app/quarkus-run.jar
-```
-
----
-
-# Principes clés
-
-* `@Path("/")` définit la route racine.
-* `@GET` expose une route HTTP `GET`.
-* `@Path("info")` expose la route `/info`.
-* `@Path("status")` expose la route `/status`.
-* `@Produces(MediaType.APPLICATION_JSON)` indique que les réponses sont en JSON.
-* `Map` peut être automatiquement converti en JSON.
-* Un `record` peut être automatiquement converti en JSON.
-* `quarkus-rest-jackson` assure la sérialisation JSON.
-* Quarkus ne nécessite pas de classe `main` pour cette application.
-* `quarkus:dev` lance Quarkus en mode développement.
-* Le mode développement active le Live Coding.
-* `@QuarkusTest` permet de démarrer Quarkus pendant les tests.
-* RestAssured permet de tester les endpoints HTTP.
-* `mvn` utilise Maven installé sur la machine.
-* `mvnw` utilise le Maven Wrapper du projet.
-* Le port HTTP est configuré dans `application.properties`.
-* Le build Quarkus est généré dans `target/quarkus-app/`.
-* Le dossier complet `target/quarkus-app/` doit être conservé pour l'exécution.
-
----
-
-# Architecture actuelle
-
 ```text
-Client HTTP
-    ↓
-RootController
-    ↓
-Map / ApiInfo
-    ↓
-Jackson
-    ↓
-JSON
-    ↓
-Client HTTP
+mvn clean                                # Nettoie les fichiers générés
+mvn compile                              # Compile le projet
+mvn test                                 # Exécute les tests
+mvn package                              # Compile, teste et génère le package
+mvn verify                               # Vérifie le package et exécute les contrôles
+mvn install                              # Installe le package dans le repository Maven local
+mvn clean package                        # Nettoie puis génère le package
+mvn clean install                        # Nettoie, teste, package et installe localement
+mvn dependency:tree                      # Affiche l'arbre des dépendances
+mvn versions:display-dependency-updates  # Affiche les mises à jour disponibles des dépendances
+mvn versions:display-plugin-updates      # Affiche les mises à jour disponibles des plugins
+mvn quarkus:dev                          # Lance Quarkus en mode développement
+java -jar target/quarkus-app/quarkus-run.jar  # Lance la version compilée
 ```
+---
 
-L'application possède maintenant :
-
-```text
-GET /
-GET /info
-GET /status
-```
-
-La prochaine étape pourra ajouter le premier CRUD :
-
-```text
-PersonController
-```
-
-avec :
-
-```text
-GET    /persons
-GET    /persons/{id}
-POST   /persons
-PUT    /persons/{id}
-DELETE /persons/{id}
-```
