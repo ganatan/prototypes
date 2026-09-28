@@ -25,7 +25,7 @@ Choisir :
 Rouvrir le terminal puis vérifier :
 
 ```powershell
-rustc --version
-cargo --version
-rustup --version
+rustc --version   # Compilateur Rust
+cargo --version   # Gestionnaire de projets, dépendances et builds
+rustup --version  # Gestionnaire des versions et toolchains Rust
 ```
