@@ -1,9 +1,11 @@
 ## RUST
 
-###  Application
+###  Tools
 - [Installation](./001-installation.md)
-- [Starter](./002-rust-starter.md)
+
+###  Basic
+- [Starter Basic](./101-rust-starter.md)
 
 ###  CRUD
-- [Starter](./201-rust-crud-starter.md)
+- [Starter CRUD](./201-rust-crud.md)
 
