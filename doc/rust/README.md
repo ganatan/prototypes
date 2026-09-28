@@ -1,6 +1,6 @@
 ## RUST
 
-###  Tools
+###  Utils
 - [Installation](./001-installation.md)
 
 ###  Basic
