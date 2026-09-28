@@ -5,4 +5,5 @@
 
 ###  CRUD
 - [Starter](./crud/101-springboot-crud.md)
+- [Root controller ](./crud/102-springboot-root-controller.md)
 
