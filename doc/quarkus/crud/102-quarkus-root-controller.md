@@ -1,16 +1,11 @@
 # RootController
 
-Cette étape remplace la ressource d'exemple générée par Quarkus par un `RootController`.
-
-L'application expose trois routes :
-
 ```text
 GET /
 GET /info
 GET /status
 ```
 
-Les réponses sont retournées au format JSON.
 
 ---
 
@@ -36,18 +31,6 @@ L'application sera disponible sur :
 ```text
 http://localhost:3000
 ```
-
----
-
-# Refactor
-
-Quarkus ne nécessite pas de classe principale équivalente à :
-
-```text
-StarterApplication
-```
-
-Le démarrage de l'application est directement géré par Quarkus.
 
 ---
 
