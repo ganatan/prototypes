@@ -3,7 +3,7 @@
 ###  Utils
 - [Installation](./001-installation.md)
 
-###  Basic
+###  Starter
 - [Starter Basic](./starter/101-rust-starter.md)
 
 ###  CRUD
