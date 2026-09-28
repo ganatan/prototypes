@@ -6,16 +6,17 @@ https://start.spring.io
 ### **Projet**
 - **Project** : Maven  
 - **Language** : Java  
-- **Spring Boot** : 4.0.1  
+- **Spring Boot** : 4.1.1  
 - **Java** : 25  
 - **Packaging** : JAR  
 
-### **Coordonnées**
+### **Project Metadata**
 - **Group** : `com.ganatan`  
 - **Artifact** : `springboot-starter`  
 - **Name** : `springboot-starter`  
 - **Description** : `Demo project for Spring Boot`  
 - **Package Name** : `com.ganatan.starter`
+- **configuration** : `YAML`
 
 ### **Dépendances à ajouter**
 - **Spring Web**
