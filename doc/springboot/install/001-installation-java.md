@@ -6,6 +6,7 @@ https://www.oracle.com/java/technologies/downloads/
 
 - Java 21 LTS : https://www.oracle.com/java/technologies/downloads/#jdk21-windows
 - Java 25 : https://www.oracle.com/java/technologies/downloads/#jdk25-windows
+- Java 27 : https://www.oracle.com/java/technologies/downloads/#jdk27-windows
 
 ## Téléchargement
 
