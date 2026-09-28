@@ -1,4 +1,4 @@
-## RUST
+## SPRINGBOOT
 
 ###  Utils
 - [Installation de java](./install/001-installation-java.md)
