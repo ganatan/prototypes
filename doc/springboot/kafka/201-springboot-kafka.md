@@ -15,6 +15,17 @@ spring.kafka.consumer.group-id=springboot-starter
 spring.kafka.consumer.auto-offset-reset=earliest
 ```
 
+## application.yml
+
+```yaml
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: springboot-starter
+      auto-offset-reset: earliest
+```
+
 ## KafkaController.java
 
 ```java
