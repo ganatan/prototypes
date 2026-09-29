@@ -1,29 +1,97 @@
-## pom.xml
+# Projet springboot-kafka
+
+## Dépendances Maven
 
 ```xml
 <dependency>
-  <groupId>org.springframework.kafka</groupId>
-  <artifactId>spring-kafka</artifactId>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-webmvc</artifactId>
+</dependency>
+
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-kafka</artifactId>
 </dependency>
 ```
 
-## application.properties
-
-```properties
-spring.kafka.bootstrap-servers=localhost:9092
-spring.kafka.consumer.group-id=springboot-starter
-spring.kafka.consumer.auto-offset-reset=earliest
-```
+Spring Boot 4.1.1 utilise directement `spring-boot-starter-kafka` pour fournir l'auto-configuration Kafka et les beans nécessaires comme `KafkaTemplate`. :chatgpt-content-reference{index="0"}
 
 ## application.yml
 
 ```yaml
+server:
+  port: 3000
+
 spring:
+  application:
+    name: springboot-starter
+
   kafka:
     bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
-      group-id: springboot-starter
+      group-id: ganatan-group
       auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+```
+
+## KafkaConfig.java
+
+```java
+package com.ganatan.starter.api.kafka;
+
+import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class KafkaConfig {
+
+  @Bean
+  public NewTopic mediaTopic() {
+    return new NewTopic("media", 1, (short) 1);
+  }
+}
+```
+
+## KafkaService.java
+
+```java
+package com.ganatan.starter.api.kafka;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class KafkaService {
+
+  private final KafkaTemplate<String, String> kafkaTemplate;
+  private final List<String> messages = new CopyOnWriteArrayList<>();
+
+  public KafkaService(KafkaTemplate<String, String> kafkaTemplate) {
+    this.kafkaTemplate = kafkaTemplate;
+  }
+
+  public void send(String message) {
+    kafkaTemplate.send("media", message);
+  }
+
+  @KafkaListener(topics = "media")
+  public void receive(String message) {
+    messages.add(message);
+  }
+
+  public List<String> messages() {
+    return new ArrayList<>(messages);
+  }
+}
 ```
 
 ## KafkaController.java
@@ -31,72 +99,93 @@ spring:
 ```java
 package com.ganatan.starter.api.kafka;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import org.apache.kafka.clients.admin.Admin;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.common.TopicPartition;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.KafkaAdmin;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/kafka")
 public class KafkaController {
 
-  private final KafkaAdmin kafkaAdmin;
-  private final KafkaTemplate<String, String> kafkaTemplate;
-  private final ConsumerFactory<String, String> consumerFactory;
+  private final KafkaService kafkaService;
 
-  public KafkaController(KafkaAdmin kafkaAdmin, KafkaTemplate<String, String> kafkaTemplate, ConsumerFactory<String, String> consumerFactory) {
-    this.kafkaAdmin = kafkaAdmin;
-    this.kafkaTemplate = kafkaTemplate;
-    this.consumerFactory = consumerFactory;
+  public KafkaController(KafkaService kafkaService) {
+    this.kafkaService = kafkaService;
   }
 
   @GetMapping
-  public Map<String, Object> status() throws Exception {
-    try (Admin admin = Admin.create(kafkaAdmin.getConfigurationProperties())) {
-      return Map.of("status", "connected", "topics", admin.listTopics().names().get());
-    }
+  public Map<String, String> status() {
+    return Map.of(
+        "status", "running",
+        "topic", "media"
+    );
   }
 
-  @PostMapping("/{topic}")
-  public Map<String, String> create(@PathVariable String topic) throws Exception {
-    try (Admin admin = Admin.create(kafkaAdmin.getConfigurationProperties())) {
-      admin.createTopics(List.of(new NewTopic(topic, 1, (short) 1))).all().get();
-      return Map.of("topic", topic, "status", "created");
-    }
+  @PostMapping("/send")
+  public Map<String, String> send(@RequestParam String message) {
+    kafkaService.send(message);
+
+    return Map.of(
+        "status", "sent",
+        "message", message
+    );
   }
 
-  @PostMapping("/{topic}/send")
-  public Map<String, String> send(@PathVariable String topic, @RequestParam String message) throws Exception {
-    kafkaTemplate.send(topic, message).get();
-    return Map.of("topic", topic, "message", message);
-  }
-
-  @GetMapping("/{topic}")
-  public List<String> read(@PathVariable String topic) {
-    try (Consumer<String, String> consumer = consumerFactory.createConsumer()) {
-      List<TopicPartition> partitions = consumer.partitionsFor(topic).stream()
-          .map(partition -> new TopicPartition(topic, partition.partition()))
-          .toList();
-
-      consumer.assign(partitions);
-      consumer.seekToBeginning(partitions);
-
-      return consumer.poll(Duration.ofSeconds(2)).records(topic).stream()
-          .map(record -> record.value())
-          .toList();
-    }
+  @GetMapping("/messages")
+  public List<String> messages() {
+    return kafkaService.messages();
   }
 }
 ```
 
-## Tester Kafka
+## Docker Compose
+
+```yaml
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka-starter
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-starter-ui
+    ports:
+      - "8085:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    depends_on:
+      - kafka
+```
+
+## Exécution
+
+```bash
+docker compose up -d
+mvn clean spring-boot:run
+```
+
+## Vérifier l'API
 
 ```text
 http://localhost:3000/kafka
@@ -106,38 +195,37 @@ Résultat :
 
 ```json
 {
-  "status": "connected",
-  "topics": []
+  "status": "running",
+  "topic": "media"
 }
 ```
 
-## Créer un topic
+## Envoyer un message
 
 ```bash
-curl -X POST http://localhost:3000/kafka/media
+curl -X POST "http://localhost:3000/kafka/send?message=Interstellar"
 ```
 
 Résultat :
 
 ```json
 {
-  "topic": "media",
-  "status": "created"
+  "status": "sent",
+  "message": "Interstellar"
 }
 ```
 
-## Envoyer des messages
+Envoyer d'autres messages :
 
 ```bash
-curl -X POST "http://localhost:3000/kafka/media/send?message=Interstellar"
-curl -X POST "http://localhost:3000/kafka/media/send?message=Dune"
-curl -X POST "http://localhost:3000/kafka/media/send?message=Alien"
+curl -X POST "http://localhost:3000/kafka/send?message=Dune"
+curl -X POST "http://localhost:3000/kafka/send?message=Alien"
 ```
 
 ## Lire les messages
 
 ```text
-http://localhost:3000/kafka/media
+http://localhost:3000/kafka/messages
 ```
 
 Résultat :
@@ -155,3 +243,10 @@ Résultat :
 ```text
 http://localhost:8085
 ```
+
+Le topic créé automatiquement est :
+
+```text
+media
+```
+
