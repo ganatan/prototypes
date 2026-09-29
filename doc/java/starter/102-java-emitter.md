@@ -1,98 +1,117 @@
-**## Projet rust-emitter**
+**## Projet java-emitter**
 
 **## Commandes essentielles**
 
 ```bash
-cargo check                  # Vérifier le code sans générer l'exécutable
-cargo run                    # Compiler puis exécuter le projet
-cargo build                  # Compiler en mode debug
-cargo build --release        # Compiler en mode optimisé
-```
-
-**## Exécutables générés**
-
-```text
-target/debug/rust-starter.exe      # Windows - build debug
-target/debug/rust-starter          # Linux - build debug
-target/release/rust-starter.exe    # Windows - build release
-target/release/rust-starter        # Linux - build release
+javac Main.java
+java Main
 ```
 
 **## Dépendances**
 
-```toml
-[dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tokio = { version = "1", features = ["full"] }
+Aucune dépendance externe.
+
+**## Configuration locale**
+
+Créer `.env` à la racine :
+
+```env
+UDP_ADDRESS=127.0.0.1
+UDP_PORT=5000
+UDP_INTERVAL_MS=1000
 ```
 
-**## Configuration**
+Le fichier `.env` est optionnel.
 
-Créer un fichier `config.json` à la racine :
+Valeurs utilisées par défaut :
 
-```json
-{
-  "address": "127.0.0.1:5000",
-  "intervalMs": 1000
-}
+```text
+UDP_ADDRESS=127.0.0.1
+UDP_PORT=5000
+UDP_INTERVAL_MS=1000
 ```
 
-**## src/main.rs**
+**## src/Main.java**
 
-```rust
-use serde::{Deserialize, Serialize};
-use std::fs;
-use tokio::net::UdpSocket;
-use tokio::time::{sleep, Duration};
+```java
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
-#[derive(Deserialize)]
-struct Config {
-    address: String,
-    #[serde(rename = "intervalMs")]
-    interval_ms: u64,
-}
+public class Main {
+    public static void main(String[] args) throws Exception {
+        String address = System.getenv().getOrDefault("UDP_ADDRESS", "127.0.0.1");
+        int port = Integer.parseInt(System.getenv().getOrDefault("UDP_PORT", "5000"));
+        long intervalMs = Long.parseLong(System.getenv().getOrDefault("UDP_INTERVAL_MS", "1000"));
 
-#[derive(Serialize)]
-struct Signal {
-    distance: u32,
-    name: String,
-}
+        DatagramSocket socket = new DatagramSocket();
+        InetAddress host = InetAddress.getByName(address);
+        int index = 1;
 
-#[tokio::main]
-async fn main() {
-    let config: Config = serde_json::from_str(&fs::read_to_string("config.json").unwrap()).unwrap();
-    let socket = UdpSocket::bind("127.0.0.1:0").await.unwrap();
-    let mut index = 1;
+        while (true) {
+            int distance = 1000 + index * 100;
+            String name = String.format("target-%03d", index);
+            String message = String.format("{\"distance\":%d,\"name\":\"%s\"}", distance, name);
 
-    loop {
-        let signal = Signal {
-            distance: 1000 + index * 100,
-            name: format!("target-{:03}", index),
-        };
+            byte[] data = message.getBytes();
+            DatagramPacket packet = new DatagramPacket(data, data.length, host, port);
 
-        let message = serde_json::to_string(&signal).unwrap();
+            socket.send(packet);
+            System.out.printf("UDP sent to %s:%d -> %s%n", address, port, message);
 
-        socket.send_to(message.as_bytes(), &config.address).await.unwrap();
-        println!("UDP sent to {} -> {}", config.address, message);
-
-        index += 1;
-        sleep(Duration::from_millis(config.interval_ms)).await;
+            index++;
+            Thread.sleep(intervalMs);
+        }
     }
 }
 ```
 
-**## Lancement**
+**## Compilation**
+
+Se placer dans `src` :
 
 ```bash
-cargo run
+cd src
+javac Main.java
+java Main
 ```
 
 **## Résultat**
 
 ```text
-{"distance":1100,"name":"target-001"}
-{"distance":1200,"name":"target-002"}
-{"distance":1300,"name":"target-003"}
+UDP sent to 127.0.0.1:5000 -> {"distance":1100,"name":"target-001"}
+UDP sent to 127.0.0.1:5000 -> {"distance":1200,"name":"target-002"}
+UDP sent to 127.0.0.1:5000 -> {"distance":1300,"name":"target-003"}
 ```
 
+**## Configuration CI/CD**
+
+Priorité de configuration :
+
+```text
+variables d'environnement
+→ valeurs par défaut
+```
+
+En local :
+
+```text
+variables d'environnement
+→ java-emitter
+```
+
+Avec Docker / OpenShift :
+
+```text
+ConfigMap / Secret
+→ variables d'environnement
+→ java-emitter
+```
+
+En CI/CD, les variables sont injectées par l'environnement :
+
+```text
+UDP_ADDRESS
+UDP_PORT
+UDP_INTERVAL_MS
+```
