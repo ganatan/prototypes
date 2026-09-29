@@ -14,7 +14,6 @@
 </dependency>
 ```
 
-Spring Boot 4.1.1 utilise directement `spring-boot-starter-kafka` pour fournir l'auto-configuration Kafka et les beans nécessaires comme `KafkaTemplate`. :chatgpt-content-reference{index="0"}
 
 ## application.yml
 
