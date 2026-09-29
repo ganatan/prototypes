@@ -37,6 +37,15 @@ UDP_ADDRESS=127.0.0.1:5000
 UDP_INTERVAL_MS=1000
 ```
 
+Le fichier `.env` est optionnel.
+
+Valeurs utilisées par défaut :
+
+```text
+UDP_ADDRESS=127.0.0.1:5000
+UDP_INTERVAL_MS=1000
+```
+
 **## src/main.rs**
 
 ```rust
@@ -56,8 +65,8 @@ struct Signal {
 async fn main() {
     dotenv().ok();
 
-    let address = env::var("UDP_ADDRESS").expect("UDP_ADDRESS is required");
-    let interval_ms = env::var("UDP_INTERVAL_MS").expect("UDP_INTERVAL_MS is required").parse::<u64>().expect("UDP_INTERVAL_MS must be a number");
+    let address = env::var("UDP_ADDRESS").unwrap_or_else(|_| "127.0.0.1:5000".to_string());
+    let interval_ms = env::var("UDP_INTERVAL_MS").unwrap_or_else(|_| "1000".to_string()).parse::<u64>().unwrap();
 
     let socket = UdpSocket::bind("127.0.0.1:0").await.unwrap();
     let mut index = 1;
@@ -85,6 +94,13 @@ async fn main() {
 cargo run
 ```
 
+ou après compilation :
+
+```bash
+cargo build --release
+target\release\rust-emitter.exe
+```
+
 **## Résultat**
 
 ```text
@@ -94,6 +110,14 @@ UDP sent to 127.0.0.1:5000 -> {"distance":1300,"name":"target-003"}
 ```
 
 **## Configuration CI/CD**
+
+Priorité de configuration :
+
+```text
+variables d'environnement
+→ .env
+→ valeurs par défaut
+```
 
 En local :
 
