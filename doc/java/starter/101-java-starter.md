@@ -41,7 +41,10 @@ java-starter
 
 ## Compilation manuelle
 
+**## Compilation manuelle**
+
 ```bash
+cd src
 javac Main.java
 java Main
 ```
