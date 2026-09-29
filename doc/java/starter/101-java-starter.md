@@ -1,42 +1,47 @@
-## Créer le projet
+# Java Starter
+
+## Vérification Java
 
 ```bash
-cargo new rust-starter
+java -version
+javac -version
 ```
 
-## Modifier Fichier `src/main.rs`
+## Création projet IntelliJ
 
-```rust
-fn main() {
-    println!("Rust Starter");
+```text
+Name: java-starter
+Build system: IntelliJ
+JDK: 21
+```
+
+## Structure
+
+```text
+java-starter
+└─ src
+   └─ Main.java
+```
+
+## Main.java
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("java-starter");
+    }
 }
 ```
 
-## Commandes essentielles
-
-```bash
-cargo check                  # Vérifier le code sans générer l'exécutable
-cargo run                    # Compiler puis exécuter le projet
-cargo build                  # Compiler en mode debug
-cargo build --release        # Compiler en mode optimisé
-```
-
-## Exécutables générés
+## Exécution
 
 ```text
-target/debug/rust-starter.exe      # Windows - build debug
-target/debug/rust-starter          # Linux - build debug
-target/release/rust-starter.exe    # Windows - build release
-target/release/rust-starter        # Linux - build release
+java-starter
 ```
 
-## Cargo.toml
+## Compilation manuelle
 
-```toml
-[package]
-name = "rust-starter"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
+```bash
+javac Main.java
+java Main
 ```
