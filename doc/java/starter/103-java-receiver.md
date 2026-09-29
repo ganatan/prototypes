@@ -1,73 +1,92 @@
-**## Projet rust-receiver**
+**## Projet java-receiver**
 
 **## Commandes essentielles**
 
 ```bash
-cargo check                  # Vérifier le code sans générer l'exécutable
-cargo run                    # Compiler puis exécuter le projet
-cargo build                  # Compiler en mode debug
-cargo build --release        # Compiler en mode optimisé
-```
-
-**## Exécutables générés**
-
-```text
-target/debug/rust-receiver.exe      # Windows - build debug
-target/debug/rust-receiver          # Linux - build debug
-target/release/rust-receiver.exe    # Windows - build release
-target/release/rust-receiver        # Linux - build release
+javac Main.java
+java Main
 ```
 
 **## Dépendances**
 
-```toml
-[dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tokio = { version = "1", features = ["full"] }
+Aucune dépendance externe.
+
+**## Configuration locale**
+
+Créer `.env` à la racine :
+
+```env
+UDP_ADDRESS=127.0.0.1
+UDP_PORT=5000
 ```
 
-**## Configuration**
+Le fichier `.env` est optionnel.
 
-Créer un fichier `config.json` à la racine :
+Valeurs utilisées par défaut :
 
-```json
-{
-  "address": "127.0.0.1:5000"
-}
+```text
+UDP_ADDRESS=127.0.0.1
+UDP_PORT=5000
 ```
 
-**## src/main.rs**
+**## src/Main.java**
 
-```rust
-use serde::Deserialize;
-use std::fs;
-use tokio::net::UdpSocket;
+```java
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
-#[derive(Deserialize)]
-struct Config {
-    address: String,
-}
+public class Main {
+    public static void main(String[] args) throws Exception {
+        String address = System.getenv().getOrDefault("UDP_ADDRESS", "127.0.0.1");
+        int port = Integer.parseInt(System.getenv().getOrDefault("UDP_PORT", "5000"));
 
-#[tokio::main]
-async fn main() {
-    let config: Config = serde_json::from_str(&fs::read_to_string("config.json").unwrap()).unwrap();
-    let socket = UdpSocket::bind(&config.address).await.unwrap();
-    let mut buffer = [0u8; 2048];
+        InetAddress host = InetAddress.getByName(address);
+        DatagramSocket socket = new DatagramSocket(port, host);
+        byte[] buffer = new byte[2048];
 
-    loop {
-        let (size, source) = socket.recv_from(&mut buffer).await.unwrap();
-        let message = String::from_utf8_lossy(&buffer[..size]);
+        while (true) {
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-        println!("UDP received from {} on {} -> {}", source, config.address, message);
+            socket.receive(packet);
+
+            String message = new String(packet.getData(), 0, packet.getLength());
+
+            System.out.printf(
+                "UDP received from %s:%d on %s:%d -> %s%n",
+                packet.getAddress().getHostAddress(),
+                packet.getPort(),
+                address,
+                port,
+                message
+            );
+        }
     }
 }
 ```
 
-**## Lancement**
+**## Compilation**
+
+Se placer dans `src` :
 
 ```bash
-cargo run
+cd src
+javac Main.java
+java Main
+```
+
+**## Création du JAR**
+
+Toujours dans `src` :
+
+```bash
+jar --create --file java-receiver.jar --main-class Main Main.class
+```
+
+Exécuter le JAR :
+
+```bash
+java -jar java-receiver.jar
 ```
 
 **## Résultat**
@@ -77,4 +96,3 @@ UDP received from 127.0.0.1:54321 on 127.0.0.1:5000 -> {"distance":1100,"name":"
 UDP received from 127.0.0.1:54321 on 127.0.0.1:5000 -> {"distance":1200,"name":"target-002"}
 UDP received from 127.0.0.1:54321 on 127.0.0.1:5000 -> {"distance":1300,"name":"target-003"}
 ```
-

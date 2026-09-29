@@ -76,42 +76,24 @@ javac Main.java
 java Main
 ```
 
+**## Création du JAR**
+
+Toujours dans `src` :
+
+```bash
+jar --create --file java-emitter.jar --main-class Main Main.class
+```
+
+Exécuter le JAR :
+
+```bash
+java -jar java-emitter.jar
+```
+
 **## Résultat**
 
 ```text
 UDP sent to 127.0.0.1:5000 -> {"distance":1100,"name":"target-001"}
 UDP sent to 127.0.0.1:5000 -> {"distance":1200,"name":"target-002"}
 UDP sent to 127.0.0.1:5000 -> {"distance":1300,"name":"target-003"}
-```
-
-**## Configuration CI/CD**
-
-Priorité de configuration :
-
-```text
-variables d'environnement
-→ valeurs par défaut
-```
-
-En local :
-
-```text
-variables d'environnement
-→ java-emitter
-```
-
-Avec Docker / OpenShift :
-
-```text
-ConfigMap / Secret
-→ variables d'environnement
-→ java-emitter
-```
-
-En CI/CD, les variables sont injectées par l'environnement :
-
-```text
-UDP_ADDRESS
-UDP_PORT
-UDP_INTERVAL_MS
 ```
