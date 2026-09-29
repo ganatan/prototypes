@@ -74,7 +74,7 @@ async fn main() {
         let message = serde_json::to_string(&signal).unwrap();
 
         socket.send_to(message.as_bytes(), &config.address).await.unwrap();
-        println!("{}", message);
+        println!("UDP sent to {} -> {}", config.address, message);
 
         index += 1;
         sleep(Duration::from_millis(config.interval_ms)).await;
