@@ -18,7 +18,7 @@ struct Signal {
 
 #[tokio::main]
 async fn main() {
-    let config: Config = serde_json::from_str(&fs::read_to_string("config.json").unwrap()).unwrap();
+    let config: Config = serde_json::from_str(&fs::read_to_string("config-emitter.json").unwrap()).unwrap();
     let socket = UdpSocket::bind("127.0.0.1:0").await.unwrap();
     let mut index = 1;
 

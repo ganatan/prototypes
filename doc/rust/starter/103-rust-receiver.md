@@ -29,7 +29,7 @@ tokio = { version = "1", features = ["full"] }
 
 **## Configuration**
 
-Créer un fichier `config.json` à la racine :
+Créer un fichier `config-receiver.json` à la racine :
 
 ```json
 {
@@ -51,7 +51,7 @@ struct Config {
 
 #[tokio::main]
 async fn main() {
-    let config: Config = serde_json::from_str(&fs::read_to_string("config.json").unwrap()).unwrap();
+    let config: Config = serde_json::from_str(&fs::read_to_string("config-receiver.json").unwrap()).unwrap();
     let socket = UdpSocket::bind(&config.address).await.unwrap();
     let mut buffer = [0u8; 2048];
 

@@ -12,46 +12,39 @@ cargo build --release        # Compiler en mode optimisé
 **## Exécutables générés**
 
 ```text
-target/debug/rust-starter.exe      # Windows - build debug
-target/debug/rust-starter          # Linux - build debug
-target/release/rust-starter.exe    # Windows - build release
-target/release/rust-starter        # Linux - build release
+target/debug/rust-emitter.exe
+target/debug/rust-emitter
+target/release/rust-emitter.exe
+target/release/rust-emitter
 ```
 
 **## Dépendances**
 
 ```toml
 [dependencies]
+dotenvy = "0.15"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 ```
 
-**## Configuration**
+**## Configuration locale**
 
-Créer un fichier `config.json` à la racine :
+Créer `.env` à la racine :
 
-```json
-{
-  "address": "127.0.0.1:5000",
-  "intervalMs": 1000
-}
+```env
+UDP_ADDRESS=127.0.0.1:5000
+UDP_INTERVAL_MS=1000
 ```
 
 **## src/main.rs**
 
 ```rust
-use serde::{Deserialize, Serialize};
-use std::fs;
+use dotenvy::dotenv;
+use serde::Serialize;
+use std::env;
 use tokio::net::UdpSocket;
 use tokio::time::{sleep, Duration};
-
-#[derive(Deserialize)]
-struct Config {
-    address: String,
-    #[serde(rename = "intervalMs")]
-    interval_ms: u64,
-}
 
 #[derive(Serialize)]
 struct Signal {
@@ -61,7 +54,11 @@ struct Signal {
 
 #[tokio::main]
 async fn main() {
-    let config: Config = serde_json::from_str(&fs::read_to_string("config.json").unwrap()).unwrap();
+    dotenv().ok();
+
+    let address = env::var("UDP_ADDRESS").expect("UDP_ADDRESS is required");
+    let interval_ms = env::var("UDP_INTERVAL_MS").expect("UDP_INTERVAL_MS is required").parse::<u64>().expect("UDP_INTERVAL_MS must be a number");
+
     let socket = UdpSocket::bind("127.0.0.1:0").await.unwrap();
     let mut index = 1;
 
@@ -73,11 +70,11 @@ async fn main() {
 
         let message = serde_json::to_string(&signal).unwrap();
 
-        socket.send_to(message.as_bytes(), &config.address).await.unwrap();
-        println!("UDP sent to {} -> {}", config.address, message);
+        socket.send_to(message.as_bytes(), &address).await.unwrap();
+        println!("UDP sent to {} -> {}", address, message);
 
         index += 1;
-        sleep(Duration::from_millis(config.interval_ms)).await;
+        sleep(Duration::from_millis(interval_ms)).await;
     }
 }
 ```
@@ -91,8 +88,34 @@ cargo run
 **## Résultat**
 
 ```text
-{"distance":1100,"name":"target-001"}
-{"distance":1200,"name":"target-002"}
-{"distance":1300,"name":"target-003"}
+UDP sent to 127.0.0.1:5000 -> {"distance":1100,"name":"target-001"}
+UDP sent to 127.0.0.1:5000 -> {"distance":1200,"name":"target-002"}
+UDP sent to 127.0.0.1:5000 -> {"distance":1300,"name":"target-003"}
 ```
 
+**## Configuration CI/CD**
+
+En local :
+
+```text
+.env
+→ variables d'environnement
+→ rust-emitter
+```
+
+Avec Docker / OpenShift :
+
+```text
+ConfigMap / Secret
+→ variables d'environnement
+→ rust-emitter
+```
+
+Le fichier `.env` est utilisé uniquement en local.
+
+En CI/CD, les variables sont injectées par l'environnement :
+
+```text
+UDP_ADDRESS
+UDP_INTERVAL_MS
+```
