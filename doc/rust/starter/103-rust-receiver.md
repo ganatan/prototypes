@@ -22,44 +22,47 @@ target/release/rust-receiver        # Linux - build release
 
 ```toml
 [dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+dotenvy = "0.15"
 tokio = { version = "1", features = ["full"] }
 ```
 
-**## Configuration**
+**## Configuration locale**
 
-Créer un fichier `config-receiver.json` à la racine :
+Créer `.env` à la racine :
 
-```json
-{
-  "address": "127.0.0.1:5000"
-}
+```env
+UDP_ADDRESS=127.0.0.1:5000
+```
+
+Le fichier `.env` est optionnel.
+
+Valeur utilisée par défaut :
+
+```text
+UDP_ADDRESS=127.0.0.1:5000
 ```
 
 **## src/main.rs**
 
 ```rust
-use serde::Deserialize;
-use std::fs;
+use dotenvy::dotenv;
+use std::env;
 use tokio::net::UdpSocket;
-
-#[derive(Deserialize)]
-struct Config {
-    address: String,
-}
 
 #[tokio::main]
 async fn main() {
-    let config: Config = serde_json::from_str(&fs::read_to_string("config-receiver.json").unwrap()).unwrap();
-    let socket = UdpSocket::bind(&config.address).await.unwrap();
+    dotenv().ok();
+
+    let address = env::var("UDP_ADDRESS").unwrap_or_else(|_| "127.0.0.1:5000".to_string());
+
+    let socket = UdpSocket::bind(&address).await.unwrap();
     let mut buffer = [0u8; 2048];
 
     loop {
         let (size, source) = socket.recv_from(&mut buffer).await.unwrap();
         let message = String::from_utf8_lossy(&buffer[..size]);
 
-        println!("UDP received from {} on {} -> {}", source, config.address, message);
+        println!("UDP received from {} on {} -> {}", source, address, message);
     }
 }
 ```
@@ -70,6 +73,13 @@ async fn main() {
 cargo run
 ```
 
+ou après compilation :
+
+```bash
+cargo build --release
+target\release\rust-receiver.exe
+```
+
 **## Résultat**
 
 ```text
@@ -78,3 +88,36 @@ UDP received from 127.0.0.1:54321 on 127.0.0.1:5000 -> {"distance":1200,"name":"
 UDP received from 127.0.0.1:54321 on 127.0.0.1:5000 -> {"distance":1300,"name":"target-003"}
 ```
 
+**## Configuration CI/CD**
+
+Priorité de configuration :
+
+```text
+variables d'environnement
+→ .env
+→ valeur par défaut
+```
+
+En local :
+
+```text
+.env
+→ variables d'environnement
+→ rust-receiver
+```
+
+Avec Docker / OpenShift :
+
+```text
+ConfigMap / Secret
+→ variables d'environnement
+→ rust-receiver
+```
+
+Le fichier `.env` est utilisé uniquement en local.
+
+En CI/CD, la variable est injectée par l'environnement :
+
+```text
+UDP_ADDRESS
+```
