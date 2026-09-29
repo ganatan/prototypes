@@ -274,15 +274,3 @@ Résultat :
   "Alien"
 ]
 ```
-
-## Kafka UI
-
-```text
-http://localhost:8085
-```
-
-Le topic créé automatiquement est :
-
-```text
-media
-```
