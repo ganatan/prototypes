@@ -14,7 +14,6 @@
 </dependency>
 ```
 
-
 ## application.properties
 
 ```properties
@@ -118,8 +117,8 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -132,6 +131,8 @@ public class KafkaController {
     this.kafkaService = kafkaService;
   }
 
+  public record KafkaMessage(String message) {}
+
   @GetMapping
   public Map<String, String> status() {
     return Map.of(
@@ -141,12 +142,12 @@ public class KafkaController {
   }
 
   @PostMapping("/send")
-  public Map<String, String> send(@RequestParam String message) {
-    kafkaService.send(message);
+  public Map<String, String> send(@RequestBody KafkaMessage body) {
+    kafkaService.send(body.message());
 
     return Map.of(
         "status", "sent",
-        "message", message
+        "message", body.message()
     );
   }
 
@@ -203,7 +204,7 @@ mvn clean spring-boot:run
 ## Vérifier l'API
 
 ```text
-http://localhost:3000/kafka
+GET http://localhost:3000/kafka
 ```
 
 Résultat :
@@ -217,11 +218,19 @@ Résultat :
 
 ## Envoyer un message
 
-```bash
-curl -X POST "http://localhost:3000/kafka/send?message=Interstellar"
+```text
+POST http://localhost:3000/kafka/send
 ```
 
-Résultat :
+Body :
+
+```json
+{
+  "message": "Interstellar"
+}
+```
+
+Réponse :
 
 ```json
 {
@@ -230,17 +239,30 @@ Résultat :
 }
 ```
 
-Envoyer d'autres messages :
+Avec curl :
 
 ```bash
-curl -X POST "http://localhost:3000/kafka/send?message=Dune"
-curl -X POST "http://localhost:3000/kafka/send?message=Alien"
+curl -X POST http://localhost:3000/kafka/send -H "Content-Type: application/json" -d "{\"message\":\"Interstellar\"}"
+```
+
+Envoyer d'autres messages :
+
+```json
+{
+  "message": "Dune"
+}
+```
+
+```json
+{
+  "message": "Alien"
+}
 ```
 
 ## Lire les messages
 
 ```text
-http://localhost:3000/kafka/messages
+GET http://localhost:3000/kafka/messages
 ```
 
 Résultat :
@@ -264,4 +286,3 @@ Le topic créé automatiquement est :
 ```text
 media
 ```
-
