@@ -12,9 +12,9 @@
 - [Starter](./crud/201-rust-crud.md)
 - [Root controller ](./crud/202-rust-root-controller.md)
 
-
-
 ###  KAFKA
 - [Kafka ](./kafka/301-rust-kafka.md)
 - [Kafka avec CRUD ](./kafka/302-rust-crud-kafka.md)
 
+###  REDIS
+- [Redis avec CRUD ](./redis/302-rust-crud-redis.md)

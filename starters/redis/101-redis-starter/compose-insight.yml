@@ -8,5 +8,13 @@ services:
     volumes:
       - redis_data:/data
 
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: ganatan-redis-insight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
+
 volumes:
   redis_data:
