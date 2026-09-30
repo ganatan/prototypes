@@ -24,6 +24,7 @@ struct AppState {
 
 #[derive(Serialize)]
 struct KafkaStatus {
+    application: String,
     status: String,
     topic: String,
 }
@@ -33,47 +34,40 @@ struct KafkaMessage {
     message: String,
 }
 
-#[derive(Serialize)]
-struct KafkaResponse {
-    status: String,
-    message: String,
-}
-
 #[tokio::main]
 async fn main() {
     dotenv().ok();
 
+    let application = env::var("APPLICATION_NAME").unwrap_or_else(|_| "rust-kafka".to_string());
     let address = env::var("SERVER_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = env::var("SERVER_PORT").unwrap_or_else(|_| "3000".to_string());
-    let bootstrap_servers = env::var("KAFKA_BOOTSTRAP_SERVERS").unwrap_or_else(|_| "localhost:9092".to_string());
+    let bootstrap = env::var("KAFKA_BOOTSTRAP_SERVERS").unwrap_or_else(|_| "localhost:9092".to_string());
     let topic = env::var("KAFKA_TOPIC").unwrap_or_else(|_| "media".to_string());
-    let group_id = env::var("KAFKA_GROUP_ID").unwrap_or_else(|_| "ganatan-rust-group".to_string());
+    let group = env::var("KAFKA_GROUP_ID").unwrap_or_else(|_| "rust-kafka-group".to_string());
 
-    let producer: FutureProducer = ClientConfig::new()
-        .set("bootstrap.servers", &bootstrap_servers)
+    let producer = ClientConfig::new()
+        .set("bootstrap.servers", &bootstrap)
         .create()
-        .expect("Kafka producer creation failed");
+        .unwrap();
 
     let consumer: StreamConsumer = ClientConfig::new()
-        .set("group.id", &group_id)
-        .set("bootstrap.servers", &bootstrap_servers)
+        .set("bootstrap.servers", &bootstrap)
+        .set("group.id", &group)
         .set("auto.offset.reset", "earliest")
         .create()
-        .expect("Kafka consumer creation failed");
+        .unwrap();
 
-    consumer.subscribe(&[&topic]).expect("Kafka subscription failed");
+    consumer.subscribe(&[&topic]).unwrap();
 
     let messages = Arc::new(RwLock::new(Vec::new()));
-    let consumer_messages = messages.clone();
+    let received = messages.clone();
 
     tokio::spawn(async move {
         let mut stream = consumer.stream();
 
-        while let Some(result) = stream.next().await {
-            if let Ok(message) = result {
-                if let Some(Ok(payload)) = message.payload_view::<str>() {
-                    consumer_messages.write().await.push(payload.to_string());
-                }
+        while let Some(Ok(message)) = stream.next().await {
+            if let Some(Ok(payload)) = message.payload_view::<str>() {
+                received.write().await.push(payload.to_string());
             }
         }
     });
@@ -81,45 +75,42 @@ async fn main() {
     let state = AppState {
         producer,
         messages,
-        topic,
+        topic: topic.clone(),
     };
 
     let app = Router::new()
-        .route("/kafka", get(status))
+        .route("/", get({
+            let application = application.clone();
+            let topic = topic.clone();
+            move || root(application.clone(), topic.clone())
+        }))
         .route("/kafka/send", post(send))
         .route("/kafka/messages", get(messages))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind(format!("{address}:{port}"))
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("{address}:{port}")).await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn status(State(state): State<AppState>) -> Json<KafkaStatus> {
+async fn root(application: String, topic: String) -> Json<KafkaStatus> {
     Json(KafkaStatus {
+        application,
         status: "running".to_string(),
-        topic: state.topic,
+        topic,
     })
 }
 
-async fn send(
-    State(state): State<AppState>,
-    Json(body): Json<KafkaMessage>,
-) -> Json<KafkaResponse> {
-    let record = FutureRecord::<(), String>::to(&state.topic).payload(&body.message);
-
-    state
-        .producer
-        .send(record, Duration::from_secs(5))
+async fn send(State(state): State<AppState>, Json(body): Json<KafkaMessage>) -> Json<KafkaMessage> {
+    state.producer
+        .send(
+            FutureRecord::<(), String>::to(&state.topic).payload(&body.message),
+            Duration::from_secs(5),
+        )
         .await
-        .expect("Kafka send failed");
+        .unwrap();
 
-    Json(KafkaResponse {
-        status: "sent".to_string(),
-        message: body.message,
-    })
+    Json(body)
 }
 
 async fn messages(State(state): State<AppState>) -> Json<Vec<String>> {

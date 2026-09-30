@@ -524,14 +524,13 @@ dependencies = [
 
 [[package]]
 name = "rust-kafka"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "axum",
  "dotenvy",
  "futures",
  "rdkafka",
  "serde",
- "serde_json",
  "tokio",
 ]
 
