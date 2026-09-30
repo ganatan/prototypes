@@ -1,3 +1,10 @@
+## Projet
+
+```bash
+cargo new rust-kafka
+cd rust-kafka
+```
+
 ## Configuration Rust
 
 Créer un fichier `.env` à la racine :
@@ -7,13 +14,6 @@ APPLICATION_NAME=rust-kafka
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 KAFKA_TOPIC=media
 KAFKA_GROUP_ID=ganatan-group
-```
-
-## Projet
-
-```bash
-cargo new rust-kafka
-cd rust-kafka
 ```
 
 ## Configuration Cargo
