@@ -1,0 +1,466 @@
+<div class="container py-5">
+
+  <div class="row justify-content-center">
+
+    <div class="col">
+
+      <div class="row">
+
+        <div class="col">
+
+          <div class="d-flex">
+
+            <div class="d-flex me-auto">
+
+              <input
+                #selectedField
+                type="text"
+                id="searchField"
+                name="searchField"
+                class="form-control me-2"
+                placeholder="news ..."
+                [(ngModel)]="searchField"
+                (keydown)="onHandleKeyDown($event)">
+
+              <button
+                type="button"
+                class="btn nga-btn-primary btn-sm nga-btn"
+                (click)="onSearch()">
+
+                <i class="fa fa-search"></i>
+
+              </button>
+
+            </div>
+
+            <div class="d-none d-md-flex align-items-center ms-4">
+
+              <strong class="text-secondary">
+
+                {{ items().length }} Movies
+
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      @if (loaded()) {
+
+        <div class="row pt-4">
+
+          @for (item of items(); track item.youtubeLink) {
+
+            <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-3 px-2 mb-3">
+
+              <div class="nga-card-movie">
+
+                <div class="card-movie-img">
+
+                  <button
+                    type="button"
+                    class="btn p-0 border-0 bg-transparent"
+                    (click)="openTrailer(item)">
+
+                    <img
+                      class="img-fluid rounded z-depth-2"
+                      [src]="'https://img.youtube.com/vi/' + item.youtubeLink + '/mqdefault.jpg'"
+                      [alt]="item.name">
+
+                  </button>
+
+                  <div
+                    class="nga-player"
+                    (click)="openTrailer(item)">
+
+                    <img
+                      src="./assets/params/images/icons/play-60-60.png"
+                      alt="play">
+
+                  </div>
+
+                </div>
+
+                <div class="card-movie-text">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-start text-decoration-none"
+                    (click)="openTrailer(item)">
+
+                    <i [class]="(item.category | category) + ' me-1'"></i>
+
+                    <span>{{ item.name }}</span>
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+        <div class="row mb-2">
+
+          <div class="d-flex justify-content-center mt-4">
+
+            <nav aria-label="Pagination">
+
+              <ul class="pagination pagination-sm">
+
+                <li class="page-item disabled">
+                  <span class="page-link">&laquo;</span>
+                </li>
+
+                <li class="page-item">
+                  <a class="page-link" href="#">1</a>
+                </li>
+
+                <li class="page-item">
+                  <span class="page-link">...</span>
+                </li>
+
+                <li class="page-item d-none d-sm-block">
+                  <a class="page-link" href="#">11</a>
+                </li>
+
+                <li class="page-item active">
+                  <span class="page-link">12</span>
+                </li>
+
+                <li class="page-item d-none d-sm-block">
+                  <a class="page-link" href="#">13</a>
+                </li>
+
+                <li class="page-item">
+                  <span class="page-link">...</span>
+                </li>
+
+                <li class="page-item">
+                  <a class="page-link" href="#">50</a>
+                </li>
+
+                <li class="page-item">
+                  <a class="page-link" href="#">&raquo;</a>
+                </li>
+
+              </ul>
+
+            </nav>
+
+          </div>
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+  <section>
+
+    <div
+      id="newsModal"
+      class="modal fade"
+      tabindex="-1"
+      aria-hidden="true">
+
+      <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+          <div class="modal-header d-flex justify-content-center d-sm-none">
+
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+          <div class="modal-body">
+
+            @if (playerLoaded()) {
+
+              <div class="nga-embed nga-embed-youtube nga-z-depth">
+
+                <iframe
+                  class="nga-embed-item"
+                  [src]="'https://www.youtube.com/embed/' + player | safe"
+                  allowfullscreen>
+
+                </iframe>
+
+              </div>
+
+            }
+
+          </div>
+
+          <div class="modal-footer justify-content-center">
+
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm d-none d-sm-inline-block"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+<!-- <div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col">
+
+      <div class="row">
+        <div class="col">
+          <div class="d-flex">
+            <div class="d-flex me-auto">
+              <input
+                #selectedField
+                type="text"
+                class="form-control me-2"
+                id="searchField"
+                name="searchField"
+                [(ngModel)]="searchField"
+                (keydown)="onHandleKeyDown($event)"
+                placeholder="news ...">
+
+              <button
+                type="button"
+                class="btn nga-btn-primary btn-sm nga-btn"
+                (click)="onSearch()">
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
+
+            <div class="d-flex me-auto d-none d-md-block">
+              <div class="pt-2 ms-4">
+                <b>
+                  <span style="color:gray">
+                    {{ items.length }} Movies
+                  </span>
+                </b>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (loaded) {
+
+        <div class="row pt-4">
+
+          @for (item of items; track item.youtubeLink) {
+
+            <div class="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-3 px-2 mb-3">
+
+              <div class="nga-card-movie">
+
+                <div class="row">
+                  <div class="col">
+
+                    <div class="card-movie-img">
+
+                      <button
+                        type="button"
+                        class="btn p-0 border-0 bg-transparent"
+                        (click)="openTrailer(item)">
+
+                        <img
+                          [src]="'https://img.youtube.com/vi/' + item.youtubeLink + '/mqdefault.jpg'"
+                          class="img-fluid rounded z-depth-2"
+                          [alt]="item.name">
+
+                      </button>
+
+                      <div
+                        class="nga-player"
+                        (click)="openTrailer(item)">
+
+                        <img
+                          src="./assets/params/images/icons/play-60-60.png"
+                          alt="play">
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col">
+
+                    <div class="card-movie-text">
+
+                      <button
+                        type="button"
+                        class="btn btn-link text-decoration-none p-0 text-start"
+                        (click)="openTrailer(item)">
+
+                        <i [class]="(item.category | category) + ' me-1'"></i>
+
+                        <span>
+                          {{ item.name }}
+                        </span>
+
+                      </button>
+
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+        <div class="row mb-2">
+          <div class="d-flex justify-content-center mt-4">
+
+            <nav aria-label="Pagination">
+
+              <ul class="pagination pagination-sm">
+
+                <li class="page-item disabled">
+                  <span class="page-link">&laquo;</span>
+                </li>
+
+                <li class="page-item">
+                  <a class="page-link" href="#">1</a>
+                </li>
+
+                <li class="page-item">
+                  <span class="page-link">...</span>
+                </li>
+
+                <li class="page-item d-none d-sm-block">
+                  <a class="page-link" href="#">11</a>
+                </li>
+
+                <li class="page-item active">
+                  <span class="page-link">12</span>
+                </li>
+
+                <li class="page-item d-none d-sm-block">
+                  <a class="page-link" href="#">13</a>
+                </li>
+
+                <li class="page-item">
+                  <span class="page-link">...</span>
+                </li>
+
+                <li class="page-item">
+                  <a class="page-link" href="#">50</a>
+                </li>
+
+                <li class="page-item">
+                  <a class="page-link" href="#">&raquo;</a>
+                </li>
+
+              </ul>
+
+            </nav>
+
+          </div>
+        </div>
+
+      }
+
+    </div>
+  </div>
+
+  <section>
+
+    <div
+      class="modal fade"
+      id="newsModal"
+      tabindex="-1"
+      aria-hidden="true">
+
+      <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+          <div class="modal-header d-flex justify-content-center d-sm-none">
+
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+          <div class="modal-body">
+
+            @if (playerLoaded) {
+
+              <div class="nga-embed nga-embed-youtube nga-z-depth">
+
+                <iframe
+                  class="nga-embed-item"
+                  [src]="'https://www.youtube.com/embed/' + player | safe"
+                  allowfullscreen>
+                </iframe>
+
+              </div>
+
+            }
+
+          </div>
+
+          <div class="modal-footer justify-content-center">
+
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm d-none d-sm-inline-block"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+</div>
+ -->

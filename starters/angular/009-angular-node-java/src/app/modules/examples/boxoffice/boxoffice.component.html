@@ -1,0 +1,635 @@
+<div class="container py-5">
+
+  <div class="row justify-content-center">
+
+    <div class="col">
+
+      <div class="d-flex">
+
+        <div class="d-flex me-auto">
+
+          <input
+            type="text"
+            id="name"
+            class="form-control me-2"
+            placeholder="movies ...">
+
+          <button
+            type="button"
+            class="btn nga-btn-boxoffice-primary btn-sm nga-btn-boxoffice">
+
+            <i class="fa fa-search"></i>
+
+          </button>
+
+        </div>
+
+        <div class="d-none d-md-flex align-items-center ms-4">
+
+          <strong class="text-secondary">
+
+            {{ items().length }} Movies
+
+          </strong>
+
+        </div>
+
+      </div>
+
+      @if (loaded()) {
+
+        <div class="table-responsive pt-4">
+
+          <table class="table table-hover table-striped table-bordered table-sm">
+
+            <thead>
+
+              <tr>
+
+                <th class="text-info text-center d-none d-md-table-cell">
+                  Rank
+                </th>
+
+                <th class="text-danger text-center">
+                  Trailer
+                </th>
+
+                <th class="text-primary text-center">
+                  Name
+                </th>
+
+                <th class="text-success text-center d-none d-md-table-cell">
+                  Wiki
+                </th>
+
+                <th class="text-center">
+                  Date
+                </th>
+
+                <th class="text-center d-none d-md-table-cell">
+                  Worldwide
+                </th>
+
+                <th class="text-center d-none d-md-table-cell">
+                  International
+                </th>
+
+                <th class="text-center d-none d-md-table-cell">
+                  Domestic
+                </th>
+
+                <th class="text-center d-none d-md-table-cell">
+                  Budget
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              @for (item of items(); track item.name; let index = $index) {
+
+                <tr>
+
+                  <td class="text-info text-center d-none d-md-table-cell">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-decoration-none"
+                      (click)="onSelectItemTrailer(item)">
+
+                      {{ index + 1 }}
+
+                    </button>
+
+                  </td>
+
+                  <td class="text-center text-danger">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-danger"
+                      (click)="onSelectItemTrailer(item)">
+
+                      <i class="fab fa-youtube"></i>
+
+                    </button>
+
+                  </td>
+
+                  <td class="text-primary text-center fw-bold">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-decoration-none"
+                      (click)="onSelectItemTrailer(item)">
+
+                      {{ item.name }}
+
+                    </button>
+
+                  </td>
+
+                  <td class="text-center d-none d-md-table-cell">
+
+                    <a
+                      [href]="'https://en.wikipedia.org/wiki/' + item.wikipediaLink"
+                      target="_blank"
+                      rel="noopener noreferrer">
+
+                      <i class="fab fa-wikipedia-w text-success"></i>
+
+                    </a>
+
+                  </td>
+
+                  <td class="text-center">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-decoration-none"
+                      (click)="onSelectItemTrailer(item)">
+
+                      {{ item.releaseDate }}
+
+                    </button>
+
+                  </td>
+
+                  <td class="text-end d-none d-md-table-cell">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-decoration-none"
+                      (click)="onSelectItemTrailer(item)">
+
+                      $ {{ item.worldwide | number }}
+
+                    </button>
+
+                  </td>
+
+                  <td class="text-end d-none d-md-table-cell">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-decoration-none"
+                      (click)="onSelectItemTrailer(item)">
+
+                      $ {{ item.international | number }}
+
+                    </button>
+
+                  </td>
+
+                  <td class="text-end d-none d-md-table-cell">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-decoration-none"
+                      (click)="onSelectItemTrailer(item)">
+
+                      $ {{ item.domestic | number }}
+
+                    </button>
+
+                  </td>
+
+                  <td class="text-end d-none d-md-table-cell">
+
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 text-decoration-none"
+                      (click)="onSelectItemTrailer(item)">
+
+                      $ {{ item.budget | number }}
+
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+          <nav aria-label="Pagination">
+
+            <ul class="pagination pagination-sm justify-content-center">
+
+              <li class="page-item">
+                <a class="page-link" href="#">&laquo;</a>
+              </li>
+
+              <li class="page-item">
+                <a class="page-link" href="#">&lsaquo;</a>
+              </li>
+
+              <li class="page-item active">
+                <span class="page-link">2</span>
+              </li>
+
+              <li class="page-item">
+                <a class="page-link" href="#">&rsaquo;</a>
+              </li>
+
+              <li class="page-item">
+                <a class="page-link" href="#">&raquo;</a>
+              </li>
+
+            </ul>
+
+          </nav>
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
+  <section>
+
+    <div
+      id="exampleModal"
+      class="modal fade"
+      tabindex="-1"
+      aria-hidden="true">
+
+      <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+          <div class="modal-header d-flex justify-content-center d-sm-none">
+
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+          <div class="modal-body">
+
+            @if (playerLoaded()) {
+
+              <div class="nga-embed nga-embed-youtube nga-z-depth">
+
+                <iframe
+                  class="nga-embed-item"
+                  [src]="'https://www.youtube.com/embed/' + player() | safe"
+                  allowfullscreen>
+
+                </iframe>
+
+              </div>
+
+            }
+
+          </div>
+
+          <div class="modal-footer justify-content-center">
+
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm d-none d-sm-inline-block"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+<!-- <div class="container py-5">
+
+  <div class="row justify-content-center">
+    <div class="col">
+
+      <div class="d-flex">
+        <div class="d-flex me-auto">
+          <input
+            type="text"
+            class="form-control me-2"
+            id="name"
+            placeholder="movies ...">
+
+          <button
+            type="button"
+            class="btn nga-btn-boxoffice-primary btn-sm nga-btn-boxoffice">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+
+        <div class="d-flex me-auto d-none d-md-block">
+          <div class="pt-2 ms-4">
+            <b>
+              <span class="text-secondary">
+                {{ items.length }} Movies
+              </span>
+            </b>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive pt-4">
+
+        <table class="table table-hover table-striped table-bordered table-sm">
+
+          <thead>
+            <tr>
+              <th class="text-info text-center d-none d-md-table-cell">
+                Rank
+              </th>
+
+              <th class="text-danger text-center">
+                Trailer
+              </th>
+
+              <th class="text-primary text-center">
+                Name
+              </th>
+
+              <th class="text-success text-center d-none d-md-table-cell">
+                Wiki
+              </th>
+
+              <th class="text-center">
+                Date
+              </th>
+
+              <th class="text-center d-none d-md-table-cell">
+                Worldwide
+              </th>
+
+              <th class="text-center d-none d-md-table-cell">
+                International
+              </th>
+
+              <th class="text-center d-none d-md-table-cell">
+                Domestic
+              </th>
+
+              <th class="text-center d-none d-md-table-cell">
+                Budget
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (item of items; track item.name; let index = $index) {
+
+              <tr>
+
+                <td class="text-info text-center d-none d-md-table-cell">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-decoration-none"
+                    (click)="onSelectItemTrailer(item)">
+
+                    {{ index + 1 }}
+
+                  </button>
+
+                </td>
+
+                <td class="text-center text-danger">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-danger"
+                    (click)="onSelectItemTrailer(item)">
+
+                    <i class="fab fa-youtube"></i>
+
+                  </button>
+
+                </td>
+
+                <td class="text-primary text-center fw-bold">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-decoration-none"
+                    (click)="onSelectItemTrailer(item)">
+
+                    {{ item.name }}
+
+                  </button>
+
+                </td>
+
+                <td class="text-center d-none d-md-table-cell">
+
+                  <a
+                    [href]="'https://en.wikipedia.org/wiki/' + item.wikipediaLink"
+                    target="_blank"
+                    rel="noopener noreferrer">
+
+                    <i class="fab fa-wikipedia-w text-success"></i>
+
+                  </a>
+
+                </td>
+
+                <td class="text-center">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-decoration-none"
+                    (click)="onSelectItemTrailer(item)">
+
+                    {{ item.releaseDate }}
+
+                  </button>
+
+                </td>
+
+                <td class="text-end d-none d-md-table-cell">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-decoration-none"
+                    (click)="onSelectItemTrailer(item)">
+
+                    $ {{ item.worldwide | number }}
+
+                  </button>
+
+                </td>
+
+                <td class="text-end d-none d-md-table-cell">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-decoration-none"
+                    (click)="onSelectItemTrailer(item)">
+
+                    $ {{ item.international | number }}
+
+                  </button>
+
+                </td>
+
+                <td class="text-end d-none d-md-table-cell">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-decoration-none"
+                    (click)="onSelectItemTrailer(item)">
+
+                    $ {{ item.domestic | number }}
+
+                  </button>
+
+                </td>
+
+                <td class="text-end d-none d-md-table-cell">
+
+                  <button
+                    type="button"
+                    class="btn btn-link p-0 text-decoration-none"
+                    (click)="onSelectItemTrailer(item)">
+
+                    $ {{ item.budget | number }}
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+        <nav aria-label="pagination">
+
+          <ul class="pagination pagination-sm justify-content-center">
+
+            <li class="page-item">
+              <a class="page-link" href="#">
+                &laquo;
+              </a>
+            </li>
+
+            <li class="page-item">
+              <a class="page-link" href="#">
+                &lsaquo;
+              </a>
+            </li>
+
+            <li class="page-item active">
+              <span class="page-link">2</span>
+            </li>
+
+            <li class="page-item">
+              <a class="page-link" href="#">
+                &rsaquo;
+              </a>
+            </li>
+
+            <li class="page-item">
+              <a class="page-link" href="#">
+                &raquo;
+              </a>
+            </li>
+
+          </ul>
+
+        </nav>
+
+      </div>
+
+    </div>
+  </div>
+
+  <section>
+
+    <div
+      class="modal fade"
+      id="exampleModal"
+      tabindex="-1"
+      aria-hidden="true">
+
+      <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+          <div class="modal-header d-flex justify-content-center d-sm-none">
+
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+          <div class="modal-body">
+
+            @if (playerLoaded) {
+
+              <div class="nga-embed nga-embed-youtube nga-z-depth">
+
+                <iframe
+                  class="nga-embed-item"
+                  [src]="'https://www.youtube.com/embed/' + player | safe"
+                  allowfullscreen>
+                </iframe>
+
+              </div>
+
+            }
+
+          </div>
+
+          <div class="modal-footer justify-content-center">
+
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm d-none d-sm-inline-block"
+              data-bs-dismiss="modal">
+
+              <strong>Close</strong>
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+ -->
