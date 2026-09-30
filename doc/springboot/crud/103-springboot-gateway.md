@@ -286,13 +286,29 @@ mvn clean spring-boot:run
 
 ---
 
-## Test Root direct
+## Test Root avec Postman
+
+### Méthode
+
+```text
+GET
+```
+
+### URL
 
 ```text
 http://localhost:3000/
 ```
 
-Réponse :
+### Headers
+
+Aucun header nécessaire.
+
+### Body
+
+Aucun body.
+
+### Réponse attendue
 
 ```json
 {
@@ -303,13 +319,29 @@ Réponse :
 
 ---
 
-## Test Root Gateway
+## Test Root Gateway avec Postman
+
+### Méthode
+
+```text
+GET
+```
+
+### URL
 
 ```text
 http://localhost:3000/api/root
 ```
 
-La Gateway transforme :
+### Headers
+
+Aucun header nécessaire.
+
+### Body
+
+Aucun body.
+
+### Fonctionnement
 
 ```text
 /api/root
@@ -317,7 +349,7 @@ La Gateway transforme :
 /
 ```
 
-Réponse :
+### Réponse attendue
 
 ```json
 {
@@ -328,12 +360,291 @@ Réponse :
 
 ---
 
-## Test Login avec accès
+## Login avec accès dans Postman
 
-```bash
-curl -X POST http://localhost:3000/login ^
-  -H "Content-Type: application/json" ^
-  -d "{\"username\":\"admin\",\"password\":\"admin\"}"
+### Méthode
+
+```text
+POST
+```
+
+### URL
+
+```text
+http://localhost:3000/login
+```
+
+### Headers
+
+Ajouter :
+
+```text
+Content-Type: application/json
+```
+
+### Body
+
+Dans Postman :
+
+```text
+Body
+→ raw
+→ JSON
+```
+
+Utiliser :
+
+```json
+{
+  "username": "admin",
+  "password": "admin"
+}
+```
+
+### Réponse attendue
+
+```json
+{
+  "token": "ganatan-token"
+}
+```
+
+Statut HTTP :
+
+```text
+200 OK
+```
+
+---
+
+## Login sans accès dans Postman
+
+### Méthode
+
+```text
+POST
+```
+
+### URL
+
+```text
+http://localhost:3000/login
+```
+
+### Headers
+
+```text
+Content-Type: application/json
+```
+
+### Body
+
+```json
+{
+  "username": "admin",
+  "password": "wrong"
+}
+```
+
+### Réponse attendue
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+Statut HTTP :
+
+```text
+401 Unauthorized
+```
+
+---
+
+## Medias sans token dans Postman
+
+### Méthode
+
+```text
+GET
+```
+
+### URL
+
+```text
+http://localhost:3000/api/medias
+```
+
+### Headers
+
+Ne rien ajouter.
+
+### Body
+
+Aucun body.
+
+### Réponse attendue
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+Statut HTTP :
+
+```text
+401 Unauthorized
+```
+
+---
+
+## Medias avec mauvais token dans Postman
+
+### Méthode
+
+```text
+GET
+```
+
+### URL
+
+```text
+http://localhost:3000/api/medias
+```
+
+### Headers
+
+Ajouter :
+
+```text
+Authorization: Bearer mauvais-token
+```
+
+### Body
+
+Aucun body.
+
+### Réponse attendue
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+Statut HTTP :
+
+```text
+401 Unauthorized
+```
+
+---
+
+## Medias avec token dans Postman
+
+### Méthode
+
+```text
+GET
+```
+
+### URL
+
+```text
+http://localhost:3000/api/medias
+```
+
+### Headers
+
+Ajouter :
+
+```text
+Authorization: Bearer ganatan-token
+```
+
+### Body
+
+Aucun body.
+
+### Réponse attendue
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Alien",
+    "year": 1979,
+    "type": "movie"
+  },
+  {
+    "id": 2,
+    "name": "Interstellar",
+    "year": 2014,
+    "type": "movie"
+  },
+  {
+    "id": 3,
+    "name": "The Last of Us",
+    "year": 2023,
+    "type": "series"
+  }
+]
+```
+
+Statut HTTP :
+
+```text
+200 OK
+```
+
+---
+
+## Alternative Postman avec Authorization
+
+Au lieu d'ajouter manuellement le header :
+
+```text
+Authorization: Bearer ganatan-token
+```
+
+dans Postman :
+
+```text
+Authorization
+→ Type : Bearer Token
+```
+
+Puis renseigner :
+
+```text
+ganatan-token
+```
+
+Postman ajoutera automatiquement :
+
+```text
+Authorization: Bearer ganatan-token
+```
+
+---
+
+## Scénario complet Postman
+
+### 1. Login
+
+```text
+POST http://localhost:3000/login
+```
+
+Body :
+
+```json
+{
+  "username": "admin",
+  "password": "admin"
+}
 ```
 
 Réponse :
@@ -346,23 +657,13 @@ Réponse :
 
 ---
 
-## Test Login sans accès
+### 2. Appel sans token
 
-```bash
-curl -X POST http://localhost:3000/login ^
-  -H "Content-Type: application/json" ^
-  -d "{\"username\":\"admin\",\"password\":\"wrong\"}"
+```text
+GET http://localhost:3000/api/medias
 ```
 
 Réponse :
-
-```json
-{
-  "error": "Unauthorized"
-}
-```
-
-Statut HTTP :
 
 ```text
 401 Unauthorized
@@ -370,56 +671,22 @@ Statut HTTP :
 
 ---
 
-## Test Medias sans token
-
-```bash
-curl http://localhost:3000/api/medias
-```
-
-Réponse :
-
-```json
-{
-  "error": "Unauthorized"
-}
-```
-
-Statut HTTP :
+### 3. Appel avec token
 
 ```text
-401 Unauthorized
+GET http://localhost:3000/api/medias
 ```
 
----
-
-## Test Medias avec mauvais token
-
-```bash
-curl http://localhost:3000/api/medias ^
-  -H "Authorization: Bearer mauvais-token"
-```
-
-Réponse :
-
-```json
-{
-  "error": "Unauthorized"
-}
-```
-
-Statut HTTP :
+Authorization :
 
 ```text
-401 Unauthorized
+Bearer Token
 ```
 
----
+Token :
 
-## Test Medias avec token
-
-```bash
-curl http://localhost:3000/api/medias ^
-  -H "Authorization: Bearer ganatan-token"
+```text
+ganatan-token
 ```
 
 Réponse :
@@ -451,10 +718,10 @@ Réponse :
 
 ## Fonctionnement
 
-Accès sans token :
+Sans token :
 
 ```text
-Client
+Postman
   |
   | GET /api/medias
   v
@@ -464,10 +731,10 @@ TokenFilter
 401 Unauthorized
 ```
 
-Accès avec token :
+Avec token :
 
 ```text
-Client
+Postman
   |
   | GET /api/medias
   | Authorization: Bearer ganatan-token
@@ -510,5 +777,16 @@ Le token utilisé ici est volontairement simulé :
 
 ```text
 ganatan-token
+```
+
+Il permet de tester simplement :
+
+```text
+login
+token
+accès refusé
+accès autorisé
+routage Gateway
+JSON en retour
 ```
 
