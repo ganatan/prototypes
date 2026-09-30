@@ -8,26 +8,11 @@ On part d'un projet Spring Boot existant :
 springboot-crud
 ```
 
-Le projet contient déjà :
-
-```text
-pom.xml
-src/main/java
-src/main/resources
-application.yml
-```
-
-On ajoute uniquement Spring Cloud Gateway et une route locale de test.
+On ajoute uniquement Spring Cloud Gateway.
 
 ---
 
 ## pom.xml
-
-Ajouter dans `<properties>` :
-
-```xml
-<spring-cloud.version>2025.1.3</spring-cloud.version>
-```
 
 Ajouter dans `<dependencies>` :
 
@@ -35,23 +20,14 @@ Ajouter dans `<dependencies>` :
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+    <version>5.0.3</version>
 </dependency>
 ```
 
-Ajouter après `<dependencies>` :
+Version utilisée :
 
-```xml
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-dependencies</artifactId>
-            <version>${spring-cloud.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
+```text
+Spring Cloud Gateway 5.0.3
 ```
 
 ---
@@ -75,7 +51,7 @@ spring:
                 - RewritePath=/api/hello, /hello
 ```
 
-Si ton fichier contient déjà :
+Si le fichier contient déjà :
 
 ```yaml
 spring:
@@ -83,7 +59,7 @@ spring:
     name: springboot-crud
 ```
 
-fusionner simplement les propriétés :
+utiliser :
 
 ```yaml
 spring:
@@ -106,7 +82,7 @@ spring:
 
 ## Controller
 
-Ajouter un contrôleur de test :
+Ajouter :
 
 ```text
 HelloController.java
@@ -132,7 +108,7 @@ public class HelloController {
 }
 ```
 
-Adapter uniquement le package à celui déjà utilisé dans ton projet.
+Adapter le package si nécessaire.
 
 ---
 
@@ -161,7 +137,7 @@ Réponse :
 
 ---
 
-## Test via Gateway
+## Test Gateway
 
 ```text
 http://localhost:3000/api/hello
@@ -171,14 +147,8 @@ La Gateway transforme :
 
 ```text
 /api/hello
-    ↓
+↓
 /hello
-```
-
-et appelle :
-
-```text
-http://localhost:3000/hello
 ```
 
 Réponse :
@@ -209,20 +179,13 @@ GET /hello
 HelloController
 ```
 
-Tout fonctionne dans le même projet :
+Tout fonctionne localement avec :
 
 ```text
-springboot-crud
-```
-
-avec :
-
-```text
-1 application
+1 projet
 1 JVM
 1 port
 0 Docker
 0 Eureka
-0 autre microservice
+0 autre service
 ```
-
