@@ -2,6 +2,7 @@ package com.ganatan.starter.api.kafka;
 
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,14 +19,17 @@ public class KafkaController {
     this.kafkaService = kafkaService;
   }
 
-  public record KafkaMessage(String message) {}
+  public record KafkaMessage(String message) {
+  }
 
   @GetMapping
   public Map<String, String> status() {
-    return Map.of(
+    Map<String, String> test;
+    test = Map.of(
         "status", "running",
         "topic", "media"
     );
+    return test;
   }
 
   @PostMapping("/send")

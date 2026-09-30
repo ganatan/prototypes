@@ -11,3 +11,7 @@
 ###  CRUD
 - [Starter](./crud/201-rust-crud.md)
 
+
+###  KAFKA
+- [Kafka ](./kafka/301-rust-kafka.md)
+
