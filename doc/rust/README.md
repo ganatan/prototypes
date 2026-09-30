@@ -10,6 +10,8 @@
 
 ###  CRUD
 - [Starter](./crud/201-rust-crud.md)
+- [Root controller ](./crud/202-rust-root-controller.md)
+
 
 
 ###  KAFKA
