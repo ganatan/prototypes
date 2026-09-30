@@ -7,7 +7,7 @@ Structure :
 ```
 REDIS-STARTER/
 ├─ docker/
-│  └─ compose.redis.yml
+│  └─ compose.yml
 └─ scripts/
    ├─ redis-up.bat
    ├─ redis-down.bat
@@ -21,7 +21,7 @@ REDIS-STARTER/
 
 # Docker Compose
 
-## docker/compose.redis.yml
+## docker/compose.yml
 
 ```yml
 services:
@@ -46,7 +46,7 @@ volumes:
 
 ```bat
 @echo off
-docker compose -f docker\compose.redis.yml up -d
+docker compose -f docker\compose.yml up -d
 pause
 ```
 
@@ -54,7 +54,7 @@ pause
 
 ```bat
 @echo off
-docker compose -f docker\compose.redis.yml down
+docker compose -f docker\compose.yml down
 pause
 ```
 
@@ -64,7 +64,7 @@ Reset total (volumes + orphelins) :
 
 ```bat
 @echo off
-docker compose -f docker\compose.redis.yml down -v --remove-orphans
+docker compose -f docker\compose.yml down -v --remove-orphans
 pause
 ```
 
@@ -72,7 +72,7 @@ pause
 
 ```bat
 @echo off
-docker compose -f docker\compose.redis.yml ps
+docker compose -f docker\compose.yml ps
 pause
 ```
 
@@ -80,7 +80,7 @@ pause
 
 ```bat
 @echo off
-docker compose -f docker\compose.redis.yml logs -f --tail=200 redis
+docker compose -f docker\compose.yml logs -f --tail=200 redis
 pause
 ```
 
