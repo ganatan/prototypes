@@ -1,4 +1,4 @@
-# Projet springboot-kafka
+# Projet springboot-redis
 
 ## Dépendances Maven
 
@@ -10,7 +10,7 @@
 
 <dependency>
   <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-kafka</artifactId>
+  <artifactId>spring-boot-starter-data-redis</artifactId>
 </dependency>
 ```
 
@@ -19,15 +19,10 @@
 ```properties
 server.port=3000
 
-spring.application.name=springboot-starter
+spring.application.name=springboot-redis
 
-spring.kafka.bootstrap-servers=localhost:9092
-spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
-spring.kafka.producer.value-serializer=org.apache.kafka.common.serialization.StringSerializer
-spring.kafka.consumer.group-id=ganatan-group
-spring.kafka.consumer.auto-offset-reset=earliest
-spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer
-spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
 ```
 
 ## application.yml
@@ -38,122 +33,114 @@ server:
 
 spring:
   application:
-    name: springboot-starter
+    name: springboot-redis
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-    consumer:
-      group-id: ganatan-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  data:
+    redis:
+      host: localhost
+      port: 6379
 ```
 
-## KafkaConfig.java
+## RedisService.java
 
 ```java
-package com.ganatan.starter.api.kafka;
+package com.ganatan.starter.api.redis;
 
-import org.apache.kafka.clients.admin.NewTopic;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class KafkaConfig {
-
-  @Bean
-  public NewTopic mediaTopic() {
-    return new NewTopic("media", 1, (short) 1);
-  }
-}
-```
-
-## KafkaService.java
-
-```java
-package com.ganatan.starter.api.kafka;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class KafkaService {
+public class RedisService {
 
-  private final KafkaTemplate<String, String> kafkaTemplate;
-  private final List<String> messages = new CopyOnWriteArrayList<>();
+  private final StringRedisTemplate redisTemplate;
 
-  public KafkaService(KafkaTemplate<String, String> kafkaTemplate) {
-    this.kafkaTemplate = kafkaTemplate;
+  public RedisService(StringRedisTemplate redisTemplate) {
+    this.redisTemplate = redisTemplate;
   }
 
-  public void send(String message) {
-    kafkaTemplate.send("media", message);
+  public void set(String key, String value) {
+    redisTemplate.opsForValue().set(key, value);
   }
 
-  @KafkaListener(topics = "media")
-  public void receive(String message) {
-    messages.add(message);
+  public String get(String key) {
+    return redisTemplate.opsForValue().get(key);
   }
 
-  public List<String> messages() {
-    return new ArrayList<>(messages);
+  public Boolean delete(String key) {
+    return redisTemplate.delete(key);
   }
 }
 ```
 
-## KafkaController.java
+## RedisController.java
 
 ```java
-package com.ganatan.starter.api.kafka;
+package com.ganatan.starter.api.redis;
 
-import java.util.List;
 import java.util.Map;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/kafka")
-public class KafkaController {
+@RequestMapping("/redis")
+public class RedisController {
 
-  private final KafkaService kafkaService;
+  private final RedisService redisService;
 
-  public KafkaController(KafkaService kafkaService) {
-    this.kafkaService = kafkaService;
+  public RedisController(RedisService redisService) {
+    this.redisService = redisService;
   }
 
-  public record KafkaMessage(String message) {}
+  public record RedisMessage(String key, String value) {}
 
   @GetMapping
   public Map<String, String> status() {
     return Map.of(
         "status", "running",
-        "topic", "media"
+        "database", "redis"
     );
   }
 
-  @PostMapping("/send")
-  public Map<String, String> send(@RequestBody KafkaMessage body) {
-    kafkaService.send(body.message());
+  @PostMapping
+  public Map<String, String> set(@RequestBody RedisMessage body) {
+    redisService.set(body.key(), body.value());
 
     return Map.of(
-        "status", "sent",
-        "message", body.message()
+        "status", "saved",
+        "key", body.key(),
+        "value", body.value()
     );
   }
 
-  @GetMapping("/messages")
-  public List<String> messages() {
-    return kafkaService.messages();
+  @GetMapping("/{key}")
+  public ResponseEntity<Map<String, String>> get(@PathVariable String key) {
+    String value = redisService.get(key);
+
+    if (value == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    return ResponseEntity.ok(Map.of(
+        "key", key,
+        "value", value
+    ));
+  }
+
+  @DeleteMapping("/{key}")
+  public Map<String, Object> delete(@PathVariable String key) {
+    Boolean deleted = redisService.delete(key);
+
+    return Map.of(
+        "status", "deleted",
+        "key", key,
+        "deleted", deleted
+    );
   }
 }
 ```
@@ -162,36 +149,19 @@ public class KafkaController {
 
 ```yaml
 services:
-  kafka:
-    image: confluentinc/cp-kafka:7.6.1
-    container_name: kafka-starter
+  redis:
+    image: redis:latest
+    container_name: redis-starter
     ports:
-      - "9092:9092"
-      - "29092:29092"
-    environment:
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://0.0.0.0:9092,CONTROLLER://kafka:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      - "6379:6379"
 
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-starter-ui
+  redis-ui:
+    image: redis/redisinsight:latest
+    container_name: redis-starter-ui
     ports:
-      - "8085:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      - "5540:5540"
     depends_on:
-      - kafka
+      - redis
 ```
 
 ## Exécution
@@ -201,32 +171,57 @@ docker compose up -d
 mvn clean spring-boot:run
 ```
 
+## Vérifier Redis
+
+```bash
+docker compose ps
+```
+
+Tester directement Redis :
+
+```bash
+docker exec -it redis-starter redis-cli
+```
+
+Puis :
+
+```text
+PING
+```
+
+Résultat :
+
+```text
+PONG
+```
+
 ## Vérifier l'API
 
 ```text
-GET http://localhost:3000/kafka
+GET http://localhost:3000/redis
 ```
 
 Résultat :
 
 ```json
 {
-  "status": "running",
-  "topic": "media"
+  "database": "redis",
+  "status": "running"
 }
 ```
 
-## Envoyer un message
+## Enregistrer une valeur
 
 ```text
-POST http://localhost:3000/kafka/send
+POST http://localhost:3000/redis
 ```
 
 Body :
 
 ```json
 {
-  "message": "Interstellar"
+  "key": "movie:1",
+  "value": "Interstellar"
 }
 ```
 
@@ -234,43 +229,135 @@ Réponse :
 
 ```json
 {
-  "status": "sent",
-  "message": "Interstellar"
+  "status": "saved",
+  "key": "movie:1",
+  "value": "Interstellar"
 }
 ```
 
-Avec curl :
-
-```bash
-curl -X POST http://localhost:3000/kafka/send -H "Content-Type: application/json" -d "{\"message\":\"Interstellar\"}"
-```
-
-Envoyer d'autres messages :
-
-```json
-{
-  "message": "Dune"
-}
-```
-
-```json
-{
-  "message": "Alien"
-}
-```
-
-## Lire les messages
+Cela correspond à la commande Redis :
 
 ```text
-GET http://localhost:3000/kafka/messages
+SET movie:1 Interstellar
+```
+
+## Lire une valeur
+
+```text
+GET http://localhost:3000/redis/movie:1
 ```
 
 Résultat :
 
 ```json
-[
-  "Interstellar",
-  "Dune",
-  "Alien"
-]
+{
+  "key": "movie:1",
+  "value": "Interstellar"
+}
+```
+
+Cela correspond à :
+
+```text
+GET movie:1
+```
+
+## Supprimer une valeur
+
+```text
+DELETE http://localhost:3000/redis/movie:1
+```
+
+Résultat :
+
+```json
+{
+  "status": "deleted",
+  "key": "movie:1",
+  "deleted": true
+}
+```
+
+Cela correspond à :
+
+```text
+DEL movie:1
+```
+
+## Vérifier directement avec redis-cli
+
+```bash
+docker exec -it redis-starter redis-cli
+```
+
+Créer :
+
+```text
+SET movie:1 Interstellar
+```
+
+Lire :
+
+```text
+GET movie:1
+```
+
+Résultat :
+
+```text
+"Interstellar"
+```
+
+Supprimer :
+
+```text
+DEL movie:1
+```
+
+## Redis Insight
+
+```text
+http://localhost:5540
+```
+
+Redis Insight permet de visualiser les clés et les valeurs présentes dans Redis.
+
+## Principe
+
+```text
+POST /redis
+    ↓
+StringRedisTemplate
+    ↓
+SET
+    ↓
+Redis
+```
+
+```text
+GET /redis/movie:1
+    ↓
+StringRedisTemplate
+    ↓
+GET
+    ↓
+Interstellar
+```
+
+```text
+DELETE /redis/movie:1
+    ↓
+StringRedisTemplate
+    ↓
+DEL
+    ↓
+Redis
+```
+
+## Commandes Redis utilisées
+
+```text
+SET
+GET
+DEL
 ```
