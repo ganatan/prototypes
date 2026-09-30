@@ -2,13 +2,25 @@
 
 ## Principe
 
-On part d'un projet Spring Boot existant :
+On part du projet Spring Boot existant :
 
 ```text
 springboot-crud
 ```
 
-On ajoute uniquement Spring Cloud Gateway.
+Le projet contient déjà :
+
+```text
+src/main/java/com/ganatan/starter
+├── api.root
+│   └── RootController.java
+└── StarterApplication.java
+
+src/main/resources
+└── application.yaml
+```
+
+Le `RootController` existant sera utilisé pour tester la Gateway.
 
 ---
 
@@ -32,83 +44,72 @@ Spring Cloud Gateway 5.0.3
 
 ---
 
-## application.yml
-
-Ajouter :
-
-```yaml
-spring:
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            - id: hello
-              uri: http://localhost:3000
-              predicates:
-                - Path=/api/hello
-              filters:
-                - RewritePath=/api/hello, /hello
-```
+## application.yaml
 
 Si le fichier contient déjà :
 
 ```yaml
+server:
+  port: 3000
+
 spring:
   application:
-    name: springboot-crud
+    name: springboot-starter
 ```
 
-utiliser :
+ajouter la configuration Gateway :
 
 ```yaml
+server:
+  port: 3000
+
 spring:
   application:
-    name: springboot-crud
+    name: springboot-starter
   cloud:
     gateway:
       server:
         webflux:
           routes:
-            - id: hello
+            - id: root
               uri: http://localhost:3000
               predicates:
-                - Path=/api/hello
+                - Path=/api/root
               filters:
-                - RewritePath=/api/hello, /hello
+                - RewritePath=/api/root, /
 ```
 
 ---
 
-## Controller
+## RootController
 
-Ajouter :
+Aucune modification nécessaire si le contrôleur expose déjà :
 
 ```text
-HelloController.java
+/
 ```
 
+Exemple :
+
 ```java
-package com.ganatan.springbootcrud;
+package com.ganatan.starter.api.root;
 
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class HelloController {
+public class RootController {
 
-    @GetMapping("/hello")
-    public Map<String, String> hello() {
+    @GetMapping("/")
+    public Map<String, String> root() {
         return Map.of(
-            "application", "springboot-crud",
-            "message", "Hello from Gateway"
+            "application", "springboot-starter",
+            "status", "running"
         );
     }
 }
 ```
-
-Adapter le package si nécessaire.
 
 ---
 
@@ -123,15 +124,15 @@ mvn spring-boot:run
 ## Test direct
 
 ```text
-http://localhost:3000/hello
+http://localhost:3000/
 ```
 
 Réponse :
 
 ```json
 {
-  "application": "springboot-crud",
-  "message": "Hello from Gateway"
+  "application": "springboot-starter",
+  "status": "running"
 }
 ```
 
@@ -140,23 +141,29 @@ Réponse :
 ## Test Gateway
 
 ```text
-http://localhost:3000/api/hello
+http://localhost:3000/api/root
 ```
 
 La Gateway transforme :
 
 ```text
-/api/hello
+/api/root
 ↓
-/hello
+/
+```
+
+puis appelle :
+
+```text
+http://localhost:3000/
 ```
 
 Réponse :
 
 ```json
 {
-  "application": "springboot-crud",
-  "message": "Hello from Gateway"
+  "application": "springboot-starter",
+  "status": "running"
 }
 ```
 
@@ -167,16 +174,16 @@ Réponse :
 ```text
 Client
   |
-  | GET /api/hello
+  | GET /api/root
   v
 Spring Cloud Gateway
   |
   | RewritePath
   v
-GET /hello
+GET /
   |
   v
-HelloController
+RootController
 ```
 
 Tout fonctionne localement avec :
