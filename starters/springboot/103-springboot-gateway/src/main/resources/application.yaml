@@ -1,0 +1,23 @@
+server:
+  port: 3000
+
+spring:
+  application:
+    name: springboot-starter
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: root
+              uri: http://localhost:3000
+              predicates:
+                - Path=/api/root
+              filters:
+                - RewritePath=/api/root, /
+            - id: medias
+              uri: http://localhost:3000
+              predicates:
+                - Path=/api/medias
+              filters:
+                - RewritePath=/api/medias, /medias
