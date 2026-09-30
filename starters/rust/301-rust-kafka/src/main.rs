@@ -27,7 +27,6 @@ async fn main() {
 
     let client = ClientBuilder::new(vec![bootstrap]).build().await.unwrap();
 
-    // création du topic (erreur ignorée s'il existe déjà)
     let controller = client.controller_client().unwrap();
     let _ = controller.create_topic(&topic, 1, 1, 5_000).await;
 
@@ -36,28 +35,29 @@ async fn main() {
         .await
         .unwrap();
 
-    // produce
     let record = Record {
         key: None,
         value: Some(b"hello kafka".to_vec()),
         headers: BTreeMap::new(),
         timestamp: Utc::now(),
     };
+
     let offsets = partition
         .produce(vec![record], Compression::default())
         .await
         .unwrap();
+
     println!("envoyé, offset = {}", offsets[0]);
 
-    // consume
     let (records, high_watermark) = partition
         .fetch_records(offsets[0], 1..1_000_000, 1_000)
         .await
         .unwrap();
 
-    for r in records {
-        let value = String::from_utf8(r.record.value.unwrap_or_default()).unwrap();
-        println!("reçu offset {} : {}", r.offset, value);
+    for record in records {
+        let value = String::from_utf8(record.record.value.unwrap_or_default()).unwrap();
+        println!("reçu offset {} : {}", record.offset, value);
     }
+
     println!("high watermark = {high_watermark}");
 }
