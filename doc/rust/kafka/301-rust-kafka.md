@@ -1,152 +1,107 @@
-**## Configuration Rust**
+## Configuration Rust
 
 Créer un fichier `.env` à la racine :
 
 ```env
 APPLICATION_NAME=rust-kafka
-SERVER_ADDRESS=127.0.0.1
-SERVER_PORT=3000
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 KAFKA_TOPIC=media
 KAFKA_GROUP_ID=ganatan-group
 ```
 
-**## Projet**
+## Projet
 
 ```bash
 cargo new rust-kafka
 cd rust-kafka
 ```
 
-**## Configuration Cargo**
+## Configuration Cargo
 
 `Cargo.toml` :
 
 ```toml
 [package]
 name = "rust-kafka"
-version = "1.0.0"
-edition = "2024"
+version = "0.1.0"
+edition = "2021"
 
 [dependencies]
-axum = "0.8"
-dotenvy = "0.15"
-kafka_client = "0.8"
-serde = { version = "1", features = ["derive"] }
+rskafka = "0.6"
 tokio = { version = "1", features = ["full"] }
+chrono = "0.4"
+dotenvy = "0.15"
 ```
 
-**## src/main.rs**
+## src/main.rs
 
 ```rust
-use std::{env, sync::Arc};
+use std::{collections::BTreeMap, env};
 
-use axum::{
-    extract::State,
-    routing::{get, post},
-    Json, Router,
-};
+use chrono::Utc;
 use dotenvy::dotenv;
-use kafka_client::{Client, ConsumerConfig, Producer, ProducerRecord};
-use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
+use rskafka::{
+    client::{
+        partition::{Compression, UnknownTopicHandling},
+        ClientBuilder,
+    },
+    record::Record,
+};
 
-#[derive(Clone)]
-struct AppState {
-    producer: Producer,
-    topic: String,
-    messages: Arc<RwLock<Vec<String>>>,
-}
-
-#[derive(Serialize)]
-struct ApiInfo {
-    application: String,
-    status: String,
-    topic: String,
-}
-
-#[derive(Deserialize, Serialize)]
-struct KafkaMessage {
-    message: String,
+fn var(key: &str, default: &str) -> String {
+    env::var(key).unwrap_or_else(|_| default.to_string())
 }
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
 
-    let application = env::var("APPLICATION_NAME").unwrap_or_else(|_| "rust-kafka".to_string());
-    let address = env::var("SERVER_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_string());
-    let port = env::var("SERVER_PORT").unwrap_or_else(|_| "3000".to_string());
-    let bootstrap = env::var("KAFKA_BOOTSTRAP_SERVERS").unwrap_or_else(|_| "localhost:9092".to_string());
-    let topic = env::var("KAFKA_TOPIC").unwrap_or_else(|_| "media".to_string());
-    let group = env::var("KAFKA_GROUP_ID").unwrap_or_else(|_| "ganatan-group".to_string());
+    let application = var("APPLICATION_NAME", "rust-kafka");
+    let bootstrap = var("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
+    let topic = var("KAFKA_TOPIC", "media");
+    let group = var("KAFKA_GROUP_ID", "ganatan-group");
 
-    let client = Client::builder(vec![bootstrap]).with_plaintext().build().await.unwrap();
-    let producer = client.producer_default().await;
+    println!("{application} (topic {topic}, group {group})");
 
-    let messages = Arc::new(RwLock::new(Vec::new()));
-    let consumer_messages = messages.clone();
-    let consumer_topic = topic.clone();
+    let client = ClientBuilder::new(vec![bootstrap]).build().await.unwrap();
 
-    let mut consumer = client.consumer(ConsumerConfig::new(group).with_earliest());
-    consumer.subscribe(vec![consumer_topic]).await.unwrap();
+    let controller = client.controller_client().unwrap();
+    let _ = controller.create_topic(&topic, 1, 1, 5_000).await;
 
-    tokio::spawn(async move {
-        loop {
-            if let Ok(records) = consumer.poll().await {
-                for record in records {
-                    if let Ok(message) = String::from_utf8(record.value.to_vec()) {
-                        consumer_messages.write().await.push(message);
-                    }
-                }
-            }
-        }
-    });
-
-    let state = AppState {
-        producer,
-        topic: topic.clone(),
-        messages,
-    };
-
-    let app = Router::new()
-        .route("/", get({
-            let application = application.clone();
-            let topic = topic.clone();
-            move || root(application.clone(), topic.clone())
-        }))
-        .route("/kafka/send", post(send))
-        .route("/kafka/messages", get(messages))
-        .with_state(state);
-
-    let listener = tokio::net::TcpListener::bind(format!("{address}:{port}")).await.unwrap();
-
-    axum::serve(listener, app).await.unwrap();
-}
-
-async fn root(application: String, topic: String) -> Json<ApiInfo> {
-    Json(ApiInfo {
-        application,
-        status: "running".to_string(),
-        topic,
-    })
-}
-
-async fn send(State(state): State<AppState>, Json(body): Json<KafkaMessage>) -> Json<KafkaMessage> {
-    state.producer
-        .send(ProducerRecord::new(&state.topic, body.message.clone().into()))
+    let partition = client
+        .partition_client(topic.clone(), 0, UnknownTopicHandling::Retry)
         .await
         .unwrap();
 
-    Json(body)
-}
+    let record = Record {
+        key: None,
+        value: Some(b"hello kafka".to_vec()),
+        headers: BTreeMap::new(),
+        timestamp: Utc::now(),
+    };
 
-async fn messages(State(state): State<AppState>) -> Json<Vec<String>> {
-    Json(state.messages.read().await.clone())
+    let offsets = partition
+        .produce(vec![record], Compression::default())
+        .await
+        .unwrap();
+
+    println!("envoyé, offset = {}", offsets[0]);
+
+    let (records, high_watermark) = partition
+        .fetch_records(offsets[0], 1..1_000_000, 1_000)
+        .await
+        .unwrap();
+
+    for record in records {
+        let value = String::from_utf8(record.record.value.unwrap_or_default()).unwrap();
+        println!("reçu offset {} : {}", record.offset, value);
+    }
+
+    println!("high watermark = {high_watermark}");
 }
 ```
 
-**## Docker Compose**
+## Docker Compose
 
 Créer `docker-compose.yml` :
 
@@ -184,76 +139,38 @@ services:
       - kafka
 ```
 
-**## Exécution**
+## Exécution
+
+Démarrer Kafka :
 
 ```bash
 docker compose up -d
+```
+
+Vérifier le projet Rust :
+
+```bash
 cargo check
+```
+
+Exécuter :
+
+```bash
 cargo run
 ```
 
-**## Vérifier l'API**
 
-```text
-GET http://localhost:3000/
-```
+## Build
 
-Résultat :
-
-```json
-{
-  "application": "rust-kafka",
-  "status": "running",
-  "topic": "media"
-}
-```
-
-**## Envoyer un message**
-
-```text
-POST http://localhost:3000/kafka/send
-```
-
-Body :
-
-```json
-{
-  "message": "Interstellar"
-}
-```
-
-Réponse :
-
-```json
-{
-  "message": "Interstellar"
-}
-```
-
-**## Lire les messages**
-
-```text
-GET http://localhost:3000/kafka/messages
-```
-
-Résultat :
-
-```json
-[
-  "Interstellar"
-]
-```
-
-**## Kafka UI**
-
-```text
-http://localhost:8085
-```
-
-**## Build**
+Compiler le projet :
 
 ```bash
 cargo build
+```
+
+Compiler en mode release :
+
+```bash
 cargo build --release
 ```
 

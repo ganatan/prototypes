@@ -16,4 +16,5 @@
 
 ###  KAFKA
 - [Kafka ](./kafka/301-rust-kafka.md)
+- [Kafka avec CRUD ](./kafka/302-rust-crud-kafka.md)
 
