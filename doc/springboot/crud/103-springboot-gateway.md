@@ -8,19 +8,16 @@ On part du projet Spring Boot existant :
 springboot-crud
 ```
 
-Le projet contient déjà :
+Le projet utilise déjà Spring MVC avec :
 
-```text
-src/main/java/com/ganatan/starter
-├── api.root
-│   └── RootController.java
-└── StarterApplication.java
-
-src/main/resources
-└── application.yaml
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
 ```
 
-Le `RootController` existant sera utilisé pour tester la Gateway.
+On ajoute donc la version MVC de Spring Cloud Gateway.
 
 ---
 
@@ -31,7 +28,7 @@ Ajouter dans `<dependencies>` :
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+    <artifactId>spring-cloud-starter-gateway-server-webmvc</artifactId>
     <version>5.0.3</version>
 </dependency>
 ```
@@ -39,14 +36,22 @@ Ajouter dans `<dependencies>` :
 Version utilisée :
 
 ```text
-Spring Cloud Gateway 5.0.3
+Spring Cloud Gateway Server WebMVC 5.0.3
 ```
+
+Ne pas utiliser :
+
+```text
+spring-cloud-starter-gateway-server-webflux
+```
+
+car le projet utilise déjà Spring MVC.
 
 ---
 
 ## application.yaml
 
-Si le fichier contient déjà :
+Le projet contient déjà :
 
 ```yaml
 server:
@@ -57,7 +62,7 @@ spring:
     name: springboot-starter
 ```
 
-ajouter la configuration Gateway :
+Ajouter la route Gateway :
 
 ```yaml
 server:
@@ -69,7 +74,7 @@ spring:
   cloud:
     gateway:
       server:
-        webflux:
+        webmvc:
           routes:
             - id: root
               uri: http://localhost:3000
@@ -83,7 +88,13 @@ spring:
 
 ## RootController
 
-Aucune modification nécessaire si le contrôleur expose déjà :
+Le projet possède déjà :
+
+```text
+src/main/java/com/ganatan/starter/api/root/RootController.java
+```
+
+Aucune modification n'est nécessaire si le contrôleur expose déjà :
 
 ```text
 /
@@ -176,7 +187,7 @@ Client
   |
   | GET /api/root
   v
-Spring Cloud Gateway
+Spring Cloud Gateway WebMVC
   |
   | RewritePath
   v
