@@ -17,4 +17,4 @@
 - [Kafka avec CRUD ](./kafka/302-rust-crud-kafka.md)
 
 ###  REDIS
-- [Redis avec CRUD ](./redis/302-rust-crud-redis.md)
+- [Redis avec CRUD ](./redis/402-rust-crud-redis.md)
